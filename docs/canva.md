@@ -1,8 +1,3 @@
-# Canvas do Projeto
-
-> Preencha em **uma página**. Se não couber, o escopo está grande demais.
-> Etapa 1 · Substitua os textos entre `<>`.
-
 **Projeto:** Sistema de Achados e Perdidos · **Equipe:** Iara Cristina, Darkiane Naiara, José Adilson e Perla Bezerra · **Data:** 2026-09-14  
 **Organização parceira:** IFPE Campus Palmares
 
