@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Objeto } from '../models/objeto/objeto.interface.js';
+import type { Objeto } from '../models/objeto/objeto.interface.js';
 
 @Injectable()
 export class ObjetosRepositoryService {
