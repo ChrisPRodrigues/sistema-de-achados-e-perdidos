@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { ObjetosRepositoryService } from './objetos-repository/objetos-repository.service.js';
+import { ObjetosController } from './objetos.controller.js';
 import { CadastroController } from './cadastro/cadastro.controller.js';
 import { CadastroService } from './cadastro/cadastro.service.js';
 
@@ -17,6 +18,7 @@ import { GerenciamentoService } from './gerenciamento/gerenciamento.service.js';
   exports: [ObjetosRepositoryService],
 
   controllers: [
+    ObjetosController,
     CadastroController,
     GerenciamentoController,
   ],
