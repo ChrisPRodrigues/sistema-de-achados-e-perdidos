@@ -1,6 +1,6 @@
 # Sistema de Achados e Perdidos — IFPE
 
-Sistema web desenvolvido em NestJS para cadastrar, consultar e gerenciar objetos encontrados no IFPE.
+Sistema web desenvolvido em **NestJS** para cadastrar, consultar e gerenciar objetos encontrados no IFPE.
 
 ## Objetivo
 
@@ -8,11 +8,11 @@ Facilitar o registro e a devolução de objetos encontrados no campus.
 
 ## Tecnologias
 
-- NestJS
-- TypeScript
-- Node.js
-- Vitest
-- Git e GitHub
+- **NestJS**
+- **TypeScript**
+- **Node.js**
+- **Vitest**
+- **Git e GitHub**
 
 ## Funcionalidades
 
@@ -23,26 +23,23 @@ Facilitar o registro e a devolução de objetos encontrados no campus.
 - Registrar devolução
 - Alterar status entre `encontrado` e `devolvido`
 
-## Como executar
+## Como Executar
 
-```bash
-cd backend
-npm install
-npm run start:dev
-```
+1. Instale as dependências e inicie o servidor:
+   ```bash
+   cd backend
+   npm install
+   npm run start:dev
+   ```
 
-### Servidor
+2. O servidor estará disponível em: [http://localhost:3000](http://localhost:3000)
 
-http://localhost:3000
-
-## Exemplos de uso
+## Exemplos de Uso
 
 ### Cadastrar objeto
+`POST /objetos`
 
-```http
-POST /objetos
-```
-
+**Request Body:**
 ```json
 {
   "nome": "Mochila",
@@ -55,35 +52,22 @@ POST /objetos
 ```
 
 ### Listar objetos
-
-```http
-GET /objetos
-```
+`GET /objetos`
 
 ### Buscar por ID
-
-```http
-GET /objetos/1
-```
+`GET /objetos/1`
 
 ### Atualizar objeto
-
-```http
-PATCH /objetos/1
-```
+`PATCH /objetos/1`
 
 ### Registrar devolução
-
-```http
-PATCH /objetos/1/devolucao
-```
+`PATCH /objetos/1/devolucao`
 
 ## Testes
 
-Para executar os testes automatizados:
-
+Para executar os testes automatizados, utilize o comando:
 ```bash
 npm test
 ```
 
-Os principais endpoints também foram testados manualmente durante o desenvolvimento.
+> **Nota:** Os principais endpoints também foram testados manualmente durante o desenvolvimento.
