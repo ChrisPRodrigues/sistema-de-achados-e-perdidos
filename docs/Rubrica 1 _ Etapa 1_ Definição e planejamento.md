@@ -1,5 +1,5 @@
-**Rubrica**  
- **Etapa 1: Definição e planejamento**
+                                                        **Rubrica**  
+                                             **Etapa 1: Definição e planejamento**
 
 **Equipe:** Darkiane Naiara,Chris(Iara Cristina),José Adilson,Perla Bezerra.  
 **Data:** 29.09.2026
@@ -20,7 +20,7 @@
 | **4\. Backlog** | Foi definido um MVP com cinco funcionalidades: cadastrar objeto encontrado; listar objetos encontrados; consultar um objeto individualmente; atualizar informações de um objeto; e registrar a devolução. Também foram definidos itens fora do MVP, como aplicativo mobile e integração automática com WhatsApp,  | Backlog com histórias de usuário, critérios de aceite, prioridade MoSCoW e estimativas.  |
 | **5\. Desenho técnico da API** | O backend foi desenvolvido em NestJS e organizado em módulos, controllers, services e repository. Foi definida a interface Objeto com id, nome, descrição, categoria, local encontrado, data encontrada e status. Foram definidas as rotas POST /objetos, GET /objetos, GET /objetos/:id, PATCH /objetos/:id e PATCH /objetos/:id/devolucao. O projeto utiliza repositório em memória nesta etapa. Também foram definidas duas decisões de arquitetura : utilização do NestJS e separação entre controller, service e repository, considerando alternativas.  | Estrutura de backend/src/objetos; objeto.interface.ts; objetos-repository.service.ts; controllers e services; rotas da API; ADRs do projeto.  |
 | **6\. Plano de execução** | Foi organizado um cronograma para as semanas 11 a 18, contemplando validação do problema, definição do MVP e backlog, desenho técnico, desenvolvimento das funcionalidades, integração, testes, correções, documentação e apresentação. Também foram identificados cinco riscos com planos de ação: falta de tempo, problemas de integração, erros nas rotas da API, alteração de requisitos e dificuldade de testes.  | Cronograma das semanas 11–18 e quadro de riscos com respectivos planos de ação.  |
-| Total |  |  |
+
 
 **Resumo das evidências técnicas já existentes:**
 
