@@ -8,17 +8,17 @@ import { CadastroService } from './cadastro/cadastro.service.js';
 import { GerenciamentoController } from './gerenciamento/gerenciamento.controller.js';
 import { GerenciamentoService } from './gerenciamento/gerenciamento.service.js';
 
-import { DevolucaoRepository } from './devolucao/devolucao.repository.js';
-import { DevolucaoService } from './devolucao/devolucao.service.js';
-import { DevolucaoController } from './devolucao/devolucao.controller.js';
+import { DevolucoesModule } from '../devolucoes/devolucoes.module.js';
 
 @Module({
+  imports: [
+    DevolucoesModule,
+  ],
+
   providers: [
     ObjetosRepositoryService,
     CadastroService,
     GerenciamentoService,
-    DevolucaoRepository,
-    DevolucaoService,
   ],
 
   exports: [
@@ -29,7 +29,6 @@ import { DevolucaoController } from './devolucao/devolucao.controller.js';
     ObjetosController,
     CadastroController,
     GerenciamentoController,
-    DevolucaoController,
   ],
 })
 export class ObjetosModule {}
