@@ -37,4 +37,16 @@ export class UsuariosService {
 
     return usuario;
   }
+
+  remover(id: number): boolean {
+    const indice = this.usuarios.findIndex((usuario) => usuario.id === id);
+
+    if (indice === -1) {
+      return false;
+    }
+
+    this.usuarios.splice(indice, 1);
+
+    return true;
+  }
 }

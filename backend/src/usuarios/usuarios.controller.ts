@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -34,5 +35,10 @@ export class UsuariosController {
     @Body() dados: Partial<Usuario>,
   ): Usuario | undefined {
     return this.usuariosService.atualizar(Number(id), dados);
+  }
+
+  @Delete(':id')
+  remover(@Param('id') id: string): boolean {
+    return this.usuariosService.remover(Number(id));
   }
 }
