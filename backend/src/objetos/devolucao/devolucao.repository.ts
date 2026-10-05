@@ -27,4 +27,33 @@ export class DevolucaoRepository {
 
     return novaDevolucao;
   }
+
+  atualizar(
+    id: number,
+    dados: Partial<Omit<Devolucao, 'id'>>,
+  ): Devolucao | undefined {
+    const devolucao = this.buscarPorId(id);
+
+    if (!devolucao) {
+      return undefined;
+    }
+
+    Object.assign(devolucao, dados);
+
+    return devolucao;
+  }
+
+  remover(id: number): boolean {
+    const indice = this.devolucoes.findIndex(
+      (devolucao) => devolucao.id === id,
+    );
+
+    if (indice === -1) {
+      return false;
+    }
+
+    this.devolucoes.splice(indice, 1);
+
+    return true;
+  }
 }
