@@ -1,4 +1,10 @@
-import { Body, Controller, Param, ParseIntPipe, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  ParseIntPipe,
+  Patch,
+} from '@nestjs/common';
 
 import { GerenciamentoService } from './gerenciamento.service.js';
 
@@ -21,7 +27,16 @@ export class GerenciamentoController {
   @Patch(':id/devolucao')
   devolver(
     @Param('id', ParseIntPipe) id: number,
+    @Body()
+    dados: {
+      usuarioId: number;
+      observacao?: string;
+    },
   ): Objeto {
-    return this.gerenciamentoService.devolver(id);
+    return this.gerenciamentoService.devolver(
+      id,
+      dados.usuarioId,
+      dados.observacao,
+    );
   }
 }

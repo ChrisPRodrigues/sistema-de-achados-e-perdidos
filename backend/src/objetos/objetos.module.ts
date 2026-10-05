@@ -8,11 +8,14 @@ import { CadastroService } from './cadastro/cadastro.service.js';
 import { GerenciamentoController } from './gerenciamento/gerenciamento.controller.js';
 import { GerenciamentoService } from './gerenciamento/gerenciamento.service.js';
 
+import { DevolucaoRepository } from './devolucao/devolucao.repository.js';
+
 @Module({
   providers: [
     ObjetosRepositoryService,
     CadastroService,
     GerenciamentoService,
+    DevolucaoRepository,
   ],
 
   exports: [ObjetosRepositoryService],
