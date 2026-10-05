@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ObjetosRepositoryService } from '../objetos-repository/objetos-repository.service.js';
 import type { Objeto } from '../models/objeto/objeto.interface.js';
-import { DevolucaoRepository } from '../devolucao/devolucao.repository.js';
+import { DevolucaoRepository } from '../../devolucoes/devolucao.repository.js';
 
 @Injectable()
 export class GerenciamentoService {
