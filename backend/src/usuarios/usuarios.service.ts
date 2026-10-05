@@ -21,4 +21,8 @@ export class UsuariosService {
 
     return novoUsuario;
   }
+
+  buscarPorId(id: number): Usuario | undefined {
+    return this.usuarios.find((usuario) => usuario.id === id);
+  }
 }
