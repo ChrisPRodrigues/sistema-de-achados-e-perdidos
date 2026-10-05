@@ -9,6 +9,8 @@ import { GerenciamentoController } from './gerenciamento/gerenciamento.controlle
 import { GerenciamentoService } from './gerenciamento/gerenciamento.service.js';
 
 import { DevolucaoRepository } from './devolucao/devolucao.repository.js';
+import { DevolucaoService } from './devolucao/devolucao.service.js';
+import { DevolucaoController } from './devolucao/devolucao.controller.js';
 
 @Module({
   providers: [
@@ -16,14 +18,18 @@ import { DevolucaoRepository } from './devolucao/devolucao.repository.js';
     CadastroService,
     GerenciamentoService,
     DevolucaoRepository,
+    DevolucaoService,
   ],
 
-  exports: [ObjetosRepositoryService],
+  exports: [
+    ObjetosRepositoryService,
+  ],
 
   controllers: [
     ObjetosController,
     CadastroController,
     GerenciamentoController,
+    DevolucaoController,
   ],
 })
 export class ObjetosModule {}
