@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { CategoriasModule } from '../categorias/categorias.module.js';
 import { ObjetosRepositoryService } from './objetos-repository/objetos-repository.service.js';
 import { ObjetosController } from './objetos.controller.js';
 import { CadastroController } from './cadastro/cadastro.controller.js';
@@ -12,6 +13,7 @@ import { DevolucoesModule } from '../devolucoes/devolucoes.module.js';
 
 @Module({
   imports: [
+    CategoriasModule,
     DevolucoesModule,
   ],
 
