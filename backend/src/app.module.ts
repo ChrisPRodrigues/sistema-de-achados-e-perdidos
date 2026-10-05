@@ -6,6 +6,7 @@ import { ObjetosModule } from './objetos/objetos.module.js';
 import { UsuariosModule } from './usuarios/usuarios.module.js';
 import { DevolucoesModule } from './devolucoes/devolucoes.module.js';
 import { CategoriasModule } from './categorias/categorias.module.js';
+import { LocaisModule } from './locais/locais.module.js';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { CategoriasModule } from './categorias/categorias.module.js';
     UsuariosModule,
     DevolucoesModule,
     CategoriasModule,
+    LocaisModule,
   ],
   controllers: [AppController],
   providers: [AppService],
