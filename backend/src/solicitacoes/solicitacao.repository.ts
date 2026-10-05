@@ -42,4 +42,18 @@ export class SolicitacaoRepository {
 
     return solicitacao;
   }
+
+  remover(id: number): boolean {
+    const indice = this.solicitacoes.findIndex(
+      (solicitacao) => solicitacao.id === id,
+    );
+
+    if (indice === -1) {
+      return false;
+    }
+
+    this.solicitacoes.splice(indice, 1);
+
+    return true;
+  }
 }

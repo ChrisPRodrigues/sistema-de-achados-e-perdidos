@@ -26,4 +26,8 @@ export class SolicitacaoService {
   ): Solicitacao | undefined {
     return this.solicitacaoRepository.atualizar(id, dados);
   }
+
+  remover(id: number): boolean {
+    return this.solicitacaoRepository.remover(id);
+  }
 }
