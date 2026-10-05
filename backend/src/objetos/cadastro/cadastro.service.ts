@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ObjetosRepositoryService } from '../objetos-repository/objetos-repository.service.js';
 import type { Objeto } from '../models/objeto/objeto.interface.js';
 
@@ -12,4 +12,12 @@ export class CadastroService {
       status: 'encontrado',
     });
   }
+  buscarPorId(id: number): Objeto {
+  const objeto = this.objetosRepository.buscarPorId(id);
+
+  if (!objeto) {
+    throw new NotFoundException('Objeto não encontrado');
+  }
+  return objeto;
+ }
 }
