@@ -25,4 +25,16 @@ export class UsuariosService {
   buscarPorId(id: number): Usuario | undefined {
     return this.usuarios.find((usuario) => usuario.id === id);
   }
+
+  atualizar(id: number, dados: Partial<Usuario>): Usuario | undefined {
+    const usuario = this.buscarPorId(id);
+
+    if (!usuario) {
+      return undefined;
+    }
+
+    Object.assign(usuario, dados);
+
+    return usuario;
+  }
 }

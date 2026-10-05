@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { UsuariosService } from './usuarios.service.js';
 import type { Usuario } from './models/usuario/usuario.interface.js';
 
@@ -19,5 +26,13 @@ export class UsuariosController {
   @Get(':id')
   buscarPorId(@Param('id') id: string): Usuario | undefined {
     return this.usuariosService.buscarPorId(Number(id));
+  }
+
+  @Patch(':id')
+  atualizar(
+    @Param('id') id: string,
+    @Body() dados: Partial<Usuario>,
+  ): Usuario | undefined {
+    return this.usuariosService.atualizar(Number(id), dados);
   }
 }
