@@ -1,5 +1,5 @@
-                                      **Rubrica2**  
-                            **Etapa 2: Sistema preliminar**
+**Rubrica2**  
+**Etapa 2: Sistema preliminar**
 
 **Equipe:** Darkiane Naiara,Chris(Iara Cristina),José Adilson,Pérla Bezerra.  
 **Data:** 29.09.2026
@@ -14,7 +14,7 @@
 
 | **Critério** | **O que foi realizado no projeto** | **Evidência** |
 |---|---|---|
-| **1. Estrutura do backend** | O backend foi desenvolvido em NestJS com TypeScript, organizado em módulos, controllers e services. Além do módulo de objetos, foi criado o módulo de usuários. | Pasta `backend/src`, `ObjetosModule`, `UsuariosModule`, controllers e services. |
+| **1. Estrutura do backend** | O backend foi desenvolvido em NestJS com TypeScript, organizado em módulos, controllers e services. Além do módulo de objetos, foi criado o módulo de usuários. | `Pasta` `backend/src`, `ObjetosModule`, `UsuariosModule`, controllers e services. |
 | **2. Modelo de dados** | Foram criadas as interfaces `Objeto` e `Usuario` para representar os dados principais do sistema. A interface `Objeto` contém informações como id, nome, descrição, categoria, local, data e status. A interface `Usuario` contém informações como id, nome e email. | `src/objetos/models/objeto/objeto.interface.ts` e `src/usuarios/models/usuario/usuario.interface.ts` |
 | **3. Persistência dos dados** | Nesta etapa, foi utilizado armazenamento em memória para armazenar e manipular os objetos e usuários enquanto a aplicação está em execução. | `objetos-repository.service.ts` e `src/usuarios/usuarios.service.ts` |
 | **4. Cadastro** | Foi implementado o cadastro de novos objetos encontrados e também o cadastro de usuários por meio de rotas HTTP. | `POST /objetos`, `POST /usuarios`, `cadastro.controller.ts`, `cadastro.service.ts`, `usuarios.controller.ts` e `usuarios.service.ts` |
