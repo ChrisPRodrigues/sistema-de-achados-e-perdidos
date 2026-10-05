@@ -5,12 +5,14 @@ import { AppService } from './app.service.js';
 import { ObjetosModule } from './objetos/objetos.module.js';
 import { UsuariosModule } from './usuarios/usuarios.module.js';
 import { DevolucoesModule } from './devolucoes/devolucoes.module.js';
+import { CategoriasModule } from './categorias/categorias.module.js';
 
 @Module({
   imports: [
     ObjetosModule,
     UsuariosModule,
     DevolucoesModule,
+    CategoriasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

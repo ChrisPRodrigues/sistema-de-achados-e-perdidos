@@ -2,7 +2,7 @@ export interface Objeto {
   id: number;
   nome: string;
   descricao: string;
-  categoria: string;
+  categoriaId: number;
   localEncontrado: string;
   dataEncontrado: Date;
   status: 'encontrado' | 'devolvido';
