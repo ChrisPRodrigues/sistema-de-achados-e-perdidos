@@ -8,6 +8,8 @@ import { DevolucoesModule } from './devolucoes/devolucoes.module.js';
 import { CategoriasModule } from './categorias/categorias.module.js';
 import { LocaisModule } from './locais/locais.module.js';
 import { SolicitacoesModule } from './solicitacoes/solicitacoes.module.js';
+import { ComprovanteModule } from './comprovantes/comprovante.module.js';
+import { HistoricoModule } from './historicos/historico.module.js';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { SolicitacoesModule } from './solicitacoes/solicitacoes.module.js';
     CategoriasModule,
     LocaisModule,
     SolicitacoesModule,
+    ComprovanteModule,
+    HistoricoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
