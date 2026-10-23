@@ -1,33 +1,102 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { ObjetosRepositoryService } from '../objetos-repository/objetos-repository.service.js';
-import { CategoriasService } from '../../categorias/categorias.service.js';
-import type { Objeto } from '../models/objeto/objeto.interface.js';
+
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { ObjetoEntity } from '../entities/objeto.entity.js';
+import { CategoriaEntity } from '../../categorias/entities/categoria.entity.js';
+import { LocalEntity } from '../../locais/entities/local.entity.js';
+import { UsuarioEntity } from '../../usuarios/entities/usuario.entity.js';
+
+type DadosCadastroObjeto = {
+  nome: string;
+  descricao: string;
+  categoriaId: number;
+  localId: number;
+  usuarioId: number;
+  dataEncontrado: Date;
+};
 
 @Injectable()
 export class CadastroService {
   constructor(
-    private readonly objetosRepository: ObjetosRepositoryService,
-    private readonly categoriasService: CategoriasService
+    @InjectRepository(ObjetoEntity)
+    private readonly objetosRepository: Repository<ObjetoEntity>,
+
+    @InjectRepository(CategoriaEntity)
+    private readonly categoriasRepository: Repository<CategoriaEntity>,
+
+    @InjectRepository(LocalEntity)
+    private readonly locaisRepository: Repository<LocalEntity>,
+
+    @InjectRepository(UsuarioEntity)
+    private readonly usuariosRepository: Repository<UsuarioEntity>,
   ) {}
 
-  cadastrar(dados: Omit<Objeto, 'id' | 'status'>): Objeto {
-    const categoria = this.categoriasService.buscarPorId(dados.categoriaId);
+  async cadastrar(
+    dados: DadosCadastroObjeto,
+  ): Promise<ObjetoEntity> {
+    const categoria = await this.categoriasRepository.findOneBy({
+      id: dados.categoriaId,
+    });
 
     if (!categoria) {
-      throw new BadRequestException('Categoria não encontrada');
+      throw new NotFoundException('Categoria não encontrada');
     }
 
-    return this.objetosRepository.adicionar({
-      ...dados,
+    const local = await this.locaisRepository.findOneBy({
+      id: dados.localId,
+    });
+
+    if (!local) {
+      throw new NotFoundException('Local não encontrado');
+    }
+
+    const usuario = await this.usuariosRepository.findOneBy({
+      id: dados.usuarioId,
+    });
+
+    if (!usuario) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    if (usuario.tipo !== 'docente') {
+      throw new BadRequestException(
+        'Somente docentes podem cadastrar objetos',
+      );
+    }
+
+    const objeto = this.objetosRepository.create({
+      nome: dados.nome,
+      descricao: dados.descricao,
+      categoria,
+      localEncontrado: local,
+      usuario,
+      dataEncontrado: dados.dataEncontrado,
       status: 'encontrado',
     });
-  }
-  buscarPorId(id: number): Objeto {
-  const objeto = this.objetosRepository.buscarPorId(id);
 
-  if (!objeto) {
-    throw new NotFoundException('Objeto não encontrado');
+    return this.objetosRepository.save(objeto);
   }
-  return objeto;
- }
+
+  async buscarPorId(id: number): Promise<ObjetoEntity> {
+    const objeto = await this.objetosRepository.findOne({
+      where: { id },
+      relations: {
+        categoria: true,
+        localEncontrado: true,
+        usuario: true,
+      },
+    });
+
+    if (!objeto) {
+      throw new NotFoundException('Objeto não encontrado');
+    }
+
+    return objeto;
+  }
 }

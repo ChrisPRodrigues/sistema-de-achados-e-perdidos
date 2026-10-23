@@ -1,52 +1,80 @@
-import { Injectable } from '@nestjs/common';
-import type { Usuario } from './models/usuario/usuario.interface.js';
+
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { UsuarioEntity } from './entities/usuario.entity.js';
+
+type TipoUsuario = 'aluno' | 'docente';
+
+type DadosUsuario = {
+  nome: string;
+  email: string;
+  tipo: TipoUsuario;
+};
 
 @Injectable()
 export class UsuariosService {
-  private usuarios: Usuario[] = [];
+  constructor(
+    @InjectRepository(UsuarioEntity)
+    private readonly usuariosRepository: Repository<UsuarioEntity>,
+  ) {}
 
-  private proximoId = 1;
-
-  listar(): Usuario[] {
-    return this.usuarios;
+  listar(): Promise<UsuarioEntity[]> {
+    return this.usuariosRepository.find();
   }
 
-  cadastrar(dados: Omit<Usuario, 'id'>): Usuario {
-    const novoUsuario: Usuario = {
-      id: this.proximoId++,
-      ...dados,
-    };
+  async cadastrar(dados: DadosUsuario): Promise<UsuarioEntity> {
+    const emailExistente = await this.usuariosRepository.findOneBy({
+      email: dados.email,
+    });
 
-    this.usuarios.push(novoUsuario);
-
-    return novoUsuario;
-  }
-
-  buscarPorId(id: number): Usuario | undefined {
-    return this.usuarios.find((usuario) => usuario.id === id);
-  }
-
-  atualizar(id: number, dados: Partial<Usuario>): Usuario | undefined {
-    const usuario = this.buscarPorId(id);
-
-    if (!usuario) {
-      return undefined;
+    if (emailExistente) {
+      throw new ConflictException('Já existe um usuário com esse e-mail');
     }
 
-    Object.assign(usuario, dados);
+    const novoUsuario = this.usuariosRepository.create(dados);
+    return this.usuariosRepository.save(novoUsuario);
+  }
+
+  async buscarPorId(id: number): Promise<UsuarioEntity> {
+    const usuario = await this.usuariosRepository.findOneBy({ id });
+
+    if (!usuario) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
 
     return usuario;
   }
 
-  remover(id: number): boolean {
-    const indice = this.usuarios.findIndex((usuario) => usuario.id === id);
+  async atualizar(
+    id: number,
+    dados: Partial<DadosUsuario>,
+  ): Promise<UsuarioEntity> {
+    const usuario = await this.buscarPorId(id);
 
-    if (indice === -1) {
-      return false;
+    if (dados.email && dados.email !== usuario.email) {
+      const emailExistente = await this.usuariosRepository.findOneBy({
+        email: dados.email,
+      });
+
+      if (emailExistente) {
+        throw new ConflictException('Já existe um usuário com esse e-mail');
+      }
     }
 
-    this.usuarios.splice(indice, 1);
+    Object.assign(usuario, dados);
+    return this.usuariosRepository.save(usuario);
+  }
 
-    return true;
+  async remover(id: number): Promise<{ mensagem: string }> {
+    const usuario = await this.buscarPorId(id);
+    await this.usuariosRepository.remove(usuario);
+
+    return { mensagem: 'Usuário removido com sucesso' };
   }
 }
