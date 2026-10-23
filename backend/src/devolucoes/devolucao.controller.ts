@@ -11,6 +11,8 @@ import {
 
 import { DevolucaoService } from './devolucao.service.js';
 import type { Devolucao } from './devolucao.interface.js';
+import { CriarDevolucaoDto } from './dto/criar-devolucao.dto.js';
+import { AtualizarDevolucaoDto } from './dto/atualizar-devolucao.dto.js';
 
 @Controller('devolucoes')
 export class DevolucaoController {
@@ -30,18 +32,17 @@ export class DevolucaoController {
     return this.devolucaoService.buscarPorId(id);
   }
 
-  @Post()
-  adicionar(
-    @Body()
-    dados: Omit<Devolucao, 'id' | 'dataDevolucao'>,
-  ): Devolucao {
-    return this.devolucaoService.adicionar(dados);
-  }
+@Post()
+adicionar(
+  @Body() dados: CriarDevolucaoDto,
+): Devolucao {
+  return this.devolucaoService.adicionar(dados);
+}
 
   @Patch(':id')
   atualizar(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dados: Partial<Omit<Devolucao, 'id'>>,
+    @Body() dados: AtualizarDevolucaoDto,
   ): Devolucao {
     return this.devolucaoService.atualizar(id, dados);
   }

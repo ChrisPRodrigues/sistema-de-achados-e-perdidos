@@ -11,6 +11,8 @@ import {
 
 import { LocaisService } from './locais.service.js';
 import type { Local } from './models/local.interface.js';
+import { CriarLocalDto } from './dto/criar-local.dto.js';
+import { AtualizarLocalDto } from './dto/atualizar-local.dto.js';
 
 @Controller('locais')
 export class LocaisController {
@@ -32,7 +34,7 @@ export class LocaisController {
 
   @Post()
   adicionar(
-    @Body() dados: Omit<Local, 'id'>,
+    @Body() dados: CriarLocalDto,
   ): Local {
     return this.locaisService.adicionar(dados);
   }
@@ -40,7 +42,7 @@ export class LocaisController {
   @Patch(':id')
   atualizar(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dados: Partial<Omit<Local, 'id'>>,
+    @Body() dados: AtualizarLocalDto,
   ): Local {
     return this.locaisService.atualizar(id, dados);
   }

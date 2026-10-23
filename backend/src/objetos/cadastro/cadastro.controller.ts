@@ -2,15 +2,7 @@ import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common
 
 import { CadastroService } from './cadastro.service.js';
 import { ObjetoEntity } from '../entities/objeto.entity.js';
-
-type DadosCadastroObjeto = {
-  nome: string;
-  descricao: string;
-  categoriaId: number;
-  localId: number;
-  usuarioId: number;
-  dataEncontrado: Date;
-};
+import { CriarObjetoDto } from '../dto/criar-objeto.dto.js';
 
 @Controller('objetos')
 export class CadastroController {
@@ -20,7 +12,7 @@ export class CadastroController {
 
   @Post()
   cadastrar(
-    @Body() dados: DadosCadastroObjeto,
+    @Body() dados: CriarObjetoDto,
   ): Promise<ObjetoEntity> {
     return this.cadastroService.cadastrar(dados);
   }

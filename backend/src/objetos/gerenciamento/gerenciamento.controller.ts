@@ -9,19 +9,8 @@ import {
 
 import { GerenciamentoService } from './gerenciamento.service.js';
 import { ObjetoEntity } from '../entities/objeto.entity.js';
-
-type DadosAtualizacaoObjeto = {
-  nome?: string;
-  descricao?: string;
-  categoriaId?: number;
-  localId?: number;
-  dataEncontrado?: Date;
-};
-
-type DadosDevolucao = {
-  usuarioId: number;
-  observacao?: string;
-};
+import { AtualizarObjetoDto } from '../dto/atualizar-objeto.dto.js';
+import { RegistrarDevolucaoDto } from '../../devolucoes/dto/registrar-devolucao.dto.js';
 
 @Controller('objetos')
 export class GerenciamentoController {
@@ -32,7 +21,7 @@ export class GerenciamentoController {
   @Patch(':id')
   atualizar(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dados: DadosAtualizacaoObjeto,
+    @Body() dados: AtualizarObjetoDto,
   ): Promise<ObjetoEntity> {
     return this.gerenciamentoService.atualizar(id, dados);
   }
@@ -40,7 +29,7 @@ export class GerenciamentoController {
   @Patch(':id/devolucao')
   devolver(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dados: DadosDevolucao,
+    @Body() dados: RegistrarDevolucaoDto,
   ): Promise<ObjetoEntity> {
     return this.gerenciamentoService.devolver(
       id,

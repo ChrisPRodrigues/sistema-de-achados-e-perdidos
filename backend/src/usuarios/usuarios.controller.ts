@@ -12,16 +12,14 @@ import {
 
 import { UsuariosService } from './usuarios.service.js';
 import { UsuarioEntity } from './entities/usuario.entity.js';
-
-type DadosUsuario = {
-  nome: string;
-  email: string;
-  tipo: 'aluno' | 'docente';
-};
+import { CriarUsuarioDto } from './dto/criar-usuario.dto.js';
+import { AtualizarUsuarioDto } from './dto/atualizar-usuario.dto.js';
 
 @Controller('usuarios')
 export class UsuariosController {
-  constructor(private readonly usuariosService: UsuariosService) {}
+  constructor(
+    private readonly usuariosService: UsuariosService,
+  ) {}
 
   @Get()
   listar(): Promise<UsuarioEntity[]> {
@@ -29,7 +27,9 @@ export class UsuariosController {
   }
 
   @Post()
-  cadastrar(@Body() usuario: DadosUsuario): Promise<UsuarioEntity> {
+  cadastrar(
+    @Body() usuario: CriarUsuarioDto,
+  ): Promise<UsuarioEntity> {
     return this.usuariosService.cadastrar(usuario);
   }
 
@@ -43,7 +43,7 @@ export class UsuariosController {
   @Patch(':id')
   atualizar(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dados: Partial<DadosUsuario>,
+    @Body() dados: AtualizarUsuarioDto,
   ): Promise<UsuarioEntity> {
     return this.usuariosService.atualizar(id, dados);
   }

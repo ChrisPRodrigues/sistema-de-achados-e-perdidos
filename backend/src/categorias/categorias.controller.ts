@@ -1,13 +1,14 @@
 import { Body, Controller, Get, Post, Param, ParseIntPipe } from '@nestjs/common';
 import { CategoriasService } from './categorias.service.js';
 import { Categoria } from './models/categoria.interface.js';
+import { CriarCategoriaDto } from './dto/criar-categoria.dto.js';
 
 @Controller('categorias')
 export class CategoriasController {
   constructor(private readonly categoriasService: CategoriasService) {}
 
   @Post()
-  criar(@Body() dados: Omit<Categoria, 'id'>) {
+  criar(@Body() dados: CriarCategoriaDto) {
     return this.categoriasService.criar(dados);
   }
 
