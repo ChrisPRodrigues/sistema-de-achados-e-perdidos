@@ -1,28 +1,53 @@
-import { Injectable } from '@nestjs/common';
-import { Categoria } from './models/categoria.interface.js';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { CategoriaEntity } from './entities/categoria.entity.js';
+import { CriarCategoriaDto } from './dto/criar-categoria.dto.js';
 
 @Injectable()
 export class CategoriasService {
-  private categorias: Categoria[] = [];
-  private proximoId = 1;
+  constructor(
+    @InjectRepository(CategoriaEntity)
+    private readonly categoriasRepository: Repository<CategoriaEntity>,
+  ) {}
 
-  criar(dados: Omit<Categoria, 'id'>): Categoria {
-    const novaCategoria: Categoria = {
-      id: this.proximoId++,
-      ...dados,
-    };
+  async criar(dados: CriarCategoriaDto): Promise<CategoriaEntity> {
+    const nome = dados.nome.trim();
 
-    this.categorias.push(novaCategoria);
+    const categoriaExistente = await this.categoriasRepository.findOne({
+      where: { nome },
+    });
 
-    return novaCategoria;
+    if (categoriaExistente) {
+      throw new ConflictException('Categoria já cadastrada');
+    }
+
+    const novaCategoria = this.categoriasRepository.create({
+      nome,
+    });
+
+    return this.categoriasRepository.save(novaCategoria);
   }
 
-  listar(): Categoria[] {
-    return this.categorias;
+  async listar(): Promise<CategoriaEntity[]> {
+    return this.categoriasRepository.find();
   }
 
-  buscarPorId(id: number): Categoria | undefined {
-    return this.categorias.find((categoria) => categoria.id === id);
+  async buscarPorId(id: number): Promise<CategoriaEntity> {
+    const categoria = await this.categoriasRepository.findOne({
+      where: { id },
+    });
+
+    if (!categoria) {
+      throw new NotFoundException('Categoria não encontrada');
+    }
+
+    return categoria;
   }
 }
-
