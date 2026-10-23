@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 
 import { LocaisService } from './locais.service.js';
-import type { Local } from './models/local.interface.js';
+import { LocalEntity } from './entities/local.entity.js';
 import { CriarLocalDto } from './dto/criar-local.dto.js';
 import { AtualizarLocalDto } from './dto/atualizar-local.dto.js';
 
@@ -21,21 +21,21 @@ export class LocaisController {
   ) {}
 
   @Get()
-  listar(): Local[] {
+  listar(): Promise<LocalEntity[]> {
     return this.locaisService.listar();
   }
 
   @Get(':id')
   buscarPorId(
     @Param('id', ParseIntPipe) id: number,
-  ): Local {
+  ): Promise<LocalEntity> {
     return this.locaisService.buscarPorId(id);
   }
 
   @Post()
   adicionar(
     @Body() dados: CriarLocalDto,
-  ): Local {
+  ): Promise<LocalEntity> {
     return this.locaisService.adicionar(dados);
   }
 
@@ -43,14 +43,14 @@ export class LocaisController {
   atualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() dados: AtualizarLocalDto,
-  ): Local {
+  ): Promise<LocalEntity> {
     return this.locaisService.atualizar(id, dados);
   }
 
   @Delete(':id')
   remover(
     @Param('id', ParseIntPipe) id: number,
-  ): void {
+  ): Promise<void> {
     return this.locaisService.remover(id);
   }
 }
