@@ -1,8 +1,12 @@
-
 import 'reflect-metadata';
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
+
 import { UsuarioEntity } from './usuarios/entities/usuario.entity.js';
+import { CategoriaEntity } from './categorias/entities/categoria.entity.js';
+import { LocalEntity } from './locais/entities/local.entity.js';
+import { ObjetoEntity } from './objetos/entities/objeto.entity.js';
+import { DevolucaoEntity } from './devolucoes/entities/devolucao.entity.js';
 
 export default new DataSource({
   type: 'postgres',
@@ -11,7 +15,13 @@ export default new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [UsuarioEntity],
+  entities: [
+    UsuarioEntity,
+    CategoriaEntity,
+    LocalEntity,
+    ObjetoEntity,
+    DevolucaoEntity,
+  ],
   migrations: ['src/migrations/*.ts'],
   synchronize: false,
 });
