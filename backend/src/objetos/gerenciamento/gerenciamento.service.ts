@@ -45,18 +45,7 @@ export class GerenciamentoService {
     id: number,
     dados: DadosAtualizacaoObjeto,
   ): Promise<ObjetoEntity> {
-    const objeto = await this.objetosRepository.findOne({
-      where: { id },
-      relations: {
-        categoria: true,
-        localEncontrado: true,
-        usuario: true,
-      },
-    });
-
-    if (!objeto) {
-      throw new NotFoundException('Objeto não encontrado');
-    }
+    const objeto = await this.buscarObjeto(id);
 
     if (dados.nome !== undefined) {
       objeto.nome = dados.nome;
@@ -102,19 +91,9 @@ export class GerenciamentoService {
   async devolver(
     id: number,
     usuarioId: number,
+    _observacao?: string,
   ): Promise<ObjetoEntity> {
-    const objeto = await this.objetosRepository.findOne({
-      where: { id },
-      relations: {
-        categoria: true,
-        localEncontrado: true,
-        usuario: true,
-      },
-    });
-
-    if (!objeto) {
-      throw new NotFoundException('Objeto não encontrado');
-    }
+    const objeto = await this.buscarObjeto(id);
 
     if (objeto.status === 'devolvido') {
       throw new ConflictException('Este objeto já foi devolvido');

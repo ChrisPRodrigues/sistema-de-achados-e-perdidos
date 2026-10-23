@@ -20,6 +20,7 @@ type DadosAtualizacaoObjeto = {
 
 type DadosDevolucao = {
   usuarioId: number;
+  observacao?: string;
 };
 
 @Controller('objetos')
@@ -44,6 +45,7 @@ export class GerenciamentoController {
     return this.gerenciamentoService.devolver(
       id,
       dados.usuarioId,
+      dados.observacao,
     );
   }
 }
