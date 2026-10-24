@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 
 import { LocalEntity } from './entities/local.entity.js';
 import { CriarLocalDto } from './dto/criar-local.dto.js';
@@ -47,6 +47,7 @@ export class LocaisService {
 
     const novoLocal = this.locaisRepository.create({
       nome,
+      descricao: dados.descricao ?? null,
     });
 
     return this.locaisRepository.save(novoLocal);
@@ -72,12 +73,29 @@ export class LocaisService {
       local.nome = nome;
     }
 
+    if (dados.descricao !== undefined) {
+      local.descricao = dados.descricao;
+    }
+
     return this.locaisRepository.save(local);
   }
 
   async remover(id: number): Promise<void> {
-    const local = await this.buscarPorId(id);
+    await this.buscarPorId(id);
 
-    await this.locaisRepository.remove(local);
+    try {
+      await this.locaisRepository.delete(id);
+    } catch (erro) {
+      if (
+        erro instanceof QueryFailedError &&
+        (erro.driverError as { code?: string })?.code === '23503'
+      ) {
+        throw new ConflictException(
+          'Não é possível excluir um local associado a objetos',
+        );
+      }
+
+      throw erro;
+    }
   }
 }
