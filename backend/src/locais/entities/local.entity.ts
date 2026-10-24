@@ -15,4 +15,10 @@ export class LocalEntity {
     unique: true,
   })
   nome: string;
+
+  @Column({
+    type: 'text',
+    nullable: true,
+  })
+  descricao: string | null;
 }
