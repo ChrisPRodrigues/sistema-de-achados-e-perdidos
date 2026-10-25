@@ -1,30 +1,46 @@
-**Rubrica 2**       
-**Etapa 2: Sistema preliminar**
+# Rubrica — Etapa 2: Sistema preliminar
 
-**Equipe:** Darkiane Naiara, Chris(Iara Cristina), José Adilson, Pérla Bezerra.
+> **Peso:** 10% da nota final · **Entrega:** semana 12  
+> Escala por critério: 4 Excelente · 3 Adequado · 2 Em desenvolvimento · 0–1 Insuficiente
 
-**Data:** 29.09.2026
+**Equipe:** `Darkiane Naiara, Chris (Iara Cristina), José Adilson, Pérla Bezerra` · **Avaliador:** `<Preencher nome>` · **Data:** `24/10/2026`
 
-| **Verificação** | **Sim** | **Não** |
-|---|---|---|
-| Repositório acessível, com o código do backend | Sim | |
-| Modelo de dados versionado (migrações aplicadas, sem erro) | Sim | |
-| Ao menos um endpoint de API funcionando fim a fim (banco → resposta) | sim | |
+## Pré-requisitos (sim/não)
 
-**Critérios**
+| Verificação | Sim | Não |
+| --- | :---: | :---: |
+| Repositório acessível, com o código do backend | ☑ | ☐ |
+| Modelo de dados versionado (migrações aplicadas, sem erro) | ☑ | ☐ |
+| Ao menos um endpoint de API funcionando fim a fim (banco → resposta) | ☑ | ☐ |
 
-| **Critério** | **O que foi realizado no projeto** | **Evidência** |
-|---|---|---|
-| **1. Estrutura do backend** | O backend foi desenvolvido em NestJS com TypeScript, organizado em módulos, controllers e services. Além do módulo de objetos, foi criado o módulo de usuários. Também foi criado um módulo próprio para devoluções e um módulo próprio para locais. Também foi criado um módulo próprio para solicitações. | `Pasta backend/src`, `ObjetosModule`, `UsuariosModule`, `DevolucoesModule`, `LocaisModule`, `SolicitacoesModule`, controllers e services. |
-| **2. Modelo de dados** | Foram criadas as interfaces `Objeto` e `Usuario` para representar os dados principais do sistema. A interface `Objeto` contém informações como id, nome, descrição, categoria, local, data e status. A interface `Usuario` contém informações como id, nome e email. Também foi criada a interface `Devolucao`, contendo id, objetoId, usuarioId, dataDevolucao e observação. Foi criada também a interface `Local`, contendo id, nome e descrição. Também foi criada a interface `Solicitacao`, contendo id, usuarioId, objetoId e status. Também foram criadas as interfaces `Comprovante` e `Historico`. A interface `Comprovante` contém id, objetoId, descrição e dataRegistro. A interface `Historico` contém id, objetoId, ação, data e observação opcional. | `src/objetos/models/objeto/objeto.interface.ts`, `src/usuarios/models/usuario/usuario.interface.ts`, `src/devolucoes/devolucao.interface.ts`, `src/locais/models/local.interface.ts`, `src/solicitacoes/models/solicitacao/solicitacao.interface.ts`, `src/comprovantes/comprovante.interface.ts` e `src/historicos/historico.interface.ts` |
-| **3. Persistência dos dados** | Nesta etapa, foi utilizado armazenamento em memória para armazenar e manipular os objetos e usuários enquanto a aplicação está em execução. As devoluções também são armazenadas em memória através de um repository próprio. Os locais são armazenados em memória através do `LocaisService`. As solicitações também são armazenadas em memória através de um repository próprio. Os comprovantes e históricos também são armazenados em memória através de repositories próprios. | `objetos-repository.service.ts`, `src/usuarios/usuarios.service.ts`, `src/devolucoes/devolucao.repository.ts`, `src/locais/locais.service.ts`, `src/solicitacoes/solicitacao.repository.ts`, `src/comprovantes/comprovante.repository.ts` e `src/historicos/historico.repository.ts` |
-| **4. Cadastro** | Foi implementado o cadastro de novos objetos encontrados e também o cadastro de usuários por meio de rotas HTTP. Também foi implementado o cadastro de devoluções. Também foi implementado o cadastro de locais. Também foi implementado o cadastro de solicitações. Também foi implementado o cadastro de comprovantes e históricos. | `POST /objetos`, `POST /usuarios`, `POST /devolucoes`, `POST /locais`, `POST /solicitacoes`, `POST /comprovantes`, `POST /historicos`, `cadastro.controller.ts`, `cadastro.service.ts`, `usuarios.controller.ts`, `usuarios.service.ts`, `locais.controller.ts` e `solicitacao.controller.ts` |
-| **5. Listagem/Pesquisa** | Foi implementada a consulta dos objetos cadastrados e a listagem dos usuários cadastrados. Também foi implementada a listagem das devoluções. Também foi implementada a listagem dos locais cadastrados. Também foi implementada a listagem das solicitações cadastradas. Também foi implementada a listagem dos comprovantes e históricos cadastrados. | `GET /objetos`, `GET /usuarios`, `GET /devolucoes`, `GET /locais`, `GET /solicitacoes`, `GET /comprovantes`, `GET /historicos` e respectivos controllers e services. |
-| **6. Consulta individual** | Foi implementada a busca de um objeto específico e de um usuário específico através do seu identificador. Também foi implementada a busca de uma devolução pelo seu identificador. Também foi implementada a busca de um local pelo seu identificador. Também foi implementada a busca de uma solicitação pelo seu identificador. Também foi implementada a busca de um comprovante e de um histórico pelo seu identificador. | `GET /objetos/:id`, `GET /usuarios/:id`, `GET /devolucoes/:id`, `GET /locais/:id`, `GET /solicitacoes/:id`, `GET /comprovantes/:id` e `GET /historicos/:id` |
-| **7. Gerenciamento** | Foram implementadas operações para atualizar informações dos objetos cadastrados e também para atualizar e excluir usuários. Também foram implementadas operações para atualizar e excluir devoluções. Os locais também podem ser atualizados e excluídos. As solicitações também podem ser atualizadas e excluídas. Os comprovantes e históricos também podem ser atualizados e excluídos. | `PATCH /objetos/:id`, `PATCH /usuarios/:id`, `DELETE /usuarios/:id`, `PATCH /devolucoes/:id`, `DELETE /devolucoes/:id`, `PATCH /locais/:id`, `DELETE /locais/:id`, `PATCH /solicitacoes/:id`, `DELETE /solicitacoes/:id`, `PATCH /comprovantes/:id`, `DELETE /comprovantes/:id`, `PATCH /historicos/:id` e `DELETE /historicos/:id` |
-| **8. Devolução** | Foi implementada uma operação específica para registrar a devolução de um objeto encontrado. Também foi criada a entidade `Devolucao`, com cinco métodos de gerenciamento: listar, buscar por ID, adicionar, atualizar e remover. | `PATCH /objetos/:id/devolucao`, `gerenciamento.controller.ts`, `gerenciamento.service.ts`, `devolucao.controller.ts`, `devolucao.service.ts` e `devolucao.repository.ts` |
-| **9. Organização do código** | O projeto separa responsabilidades entre controllers, services, modelos e repositories. As funcionalidades de usuários também foram organizadas em um módulo próprio. As funcionalidades de devolução também foram organizadas em um módulo próprio e separado. As funcionalidades de locais foram organizadas em seu próprio módulo, controller, service e modelo. As funcionalidades de solicitações também foram organizadas em seu próprio módulo, controller, service, repository e modelo. As funcionalidades de comprovantes e históricos também foram organizadas em módulos próprios, com controller, service, repository e interface. | Estrutura de `src/objetos/`, `src/usuarios/`, `src/devolucoes/`, `src/locais/`, `src/solicitacoes/`, `src/comprovantes/` e `src/historicos/` |
-| **10. Trabalho em equipe** | As funcionalidades foram desenvolvidas em branches separadas e posteriormente integradas à branch `main`. A entidade Local também foi desenvolvida em uma branch própria. A entidade Solicitação também foi desenvolvida em uma branch própria e posteriormente integrada à branch `main`. | `feat/cadastro-objetos`, `feat/gerenciamento-devolucao`, `feature/buscar-objeto-por-id`, `feature/get-objetos`, `feature/cadastro-usuarios`, `feat/entidade-local` e `feat/entidade-solicitacao` |
-| **11. Testes/documentação** | O repositório possui arquivos de teste e documentação das funcionalidades implementadas. Também foram realizadas verificações das operações de usuários, incluindo cadastro, consulta, atualização e exclusão. Também foram verificadas as operações de cadastro, listagem, consulta, atualização e exclusão de devoluções. As cinco operações de Local — cadastro, listagem, consulta por ID, atualização e exclusão — também foram verificadas com sucesso. Também foram verificadas as operações de cadastro, listagem, consulta por ID, atualização e exclusão de solicitações. Também foram verificadas as cinco operações de Comprovante — cadastro, listagem, consulta por ID, atualização e exclusão — e as cinco operações de Histórico — cadastro, listagem, consulta por ID, atualização e exclusão. | `objetos.controller.spec.ts`, `TESTES.md`, `readme.md`, verificações das rotas de `usuarios`, `devolucoes`, `locais`, `solicitacoes`, `comprovantes` e `historicos`. |
-| **12. Banco de dados / migrations** | Não implementado nesta etapa. Os dados continuam sendo mantidos em memória. | — |
-| **13. DTOs e validações** | Ainda não foram implementados DTOs e validações de entrada nesta etapa. | — |
+## Critérios
+
+| Critério | Peso | 4 — Excelente | 3 — Adequado | 2 — Em desenvolvimento | 0–1 — Insuficiente | Nível |
+| --- | ---: | --- | --- | --- | --- | :---: |
+| **1. Modelo de dados** | 3,0 | 5+ entidades corretas, com relações, `onDelete` justificado e restrições de integridade testadas | 5+ entidades corretas, com relações e restrições básicas | 3–4 entidades ou relações confusas | Menos de 3 entidades ou modelagem que não sustenta as regras | 3 |
+| **2. API e CRUD** | 4,0 | CRUD completo em 3+ recursos, com DTOs de entrada e saída separados | CRUD completo em 2 recursos | CRUD parcial | Não funciona | 3 |
+| **3. Validação e consultas** | 2,0 | Validação de servidor cobrindo as regras, mais filtros ou paginação | Validação de servidor cobrindo as regras principais | Validação incompleta | Sem validação de servidor | 3 |
+| **4. Organização do código** | 1,0 | Código legível, lint limpo, regra de negócio no service, fora do controller | Lint limpo, código compreensível | Alguns problemas de organização | Código ilegível ou duplicado | 3 |
+| **Total** | **10,0** | | | | | |
+
+**Nota da etapa** = Σ (nível × peso) ÷ 4
+
+---
+
+## Devolutiva
+
+**Pontos fortes:**
+
+- Modelo de dados com cinco entidades principais do MVP: Objeto, Categoria, Local, Usuário e Devolução.
+- Banco de dados PostgreSQL integrado ao backend, com migrações aplicadas, relacionamentos e restrições de integridade.
+- Operações CRUD implementadas para Categorias, Locais, Usuários e Devoluções.
+- Validações de entrada e regras de negócio implementadas nos services.
+- Testes realizados para campos inválidos, referências inexistentes e tentativas de registrar devoluções duplicadas.
+- Build concluído com sucesso, lint sem erros ou avisos e testes automatizados aprovados.
+
+**O que ajustar antes da Etapa 3 (sistema final):**
+
+- Dar continuidade às próximas etapas previstas no planejamento do projeto, conforme o cronograma estabelecido pela equipe.
+- Manter a documentação técnica do modelo de dados e das regras de integridade como parte da documentação do projeto.
+
+**Aprovado para seguir?** ☐ Sim ☑ Sim, com ajustes ☐ Não — corrigir e reenviar (recuperação)
