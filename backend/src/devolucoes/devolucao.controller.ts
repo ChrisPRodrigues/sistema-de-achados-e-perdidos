@@ -1,3 +1,4 @@
+
 import {
   Body,
   Controller,
@@ -11,6 +12,8 @@ import {
 
 import { DevolucaoService } from './devolucao.service.js';
 import type { Devolucao } from './devolucao.interface.js';
+import { CriarDevolucaoDto } from './dto/criar-devolucao.dto.js';
+import { AtualizarDevolucaoDto } from './dto/atualizar-devolucao.dto.js';
 
 @Controller('devolucoes')
 export class DevolucaoController {
@@ -19,37 +22,36 @@ export class DevolucaoController {
   ) {}
 
   @Get()
-  listar(): Devolucao[] {
+  listar(): Promise<Devolucao[]> {
     return this.devolucaoService.listar();
   }
 
   @Get(':id')
   buscarPorId(
     @Param('id', ParseIntPipe) id: number,
-  ): Devolucao {
+  ): Promise<Devolucao> {
     return this.devolucaoService.buscarPorId(id);
   }
 
   @Post()
   adicionar(
-    @Body()
-    dados: Omit<Devolucao, 'id' | 'dataDevolucao'>,
-  ): Devolucao {
+    @Body() dados: CriarDevolucaoDto,
+  ): Promise<Devolucao> {
     return this.devolucaoService.adicionar(dados);
   }
 
   @Patch(':id')
   atualizar(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dados: Partial<Omit<Devolucao, 'id'>>,
-  ): Devolucao {
+    @Body() dados: AtualizarDevolucaoDto,
+  ): Promise<Devolucao> {
     return this.devolucaoService.atualizar(id, dados);
   }
 
   @Delete(':id')
   remover(
     @Param('id', ParseIntPipe) id: number,
-  ): void {
+  ): Promise<void> {
     return this.devolucaoService.remover(id);
   }
 }

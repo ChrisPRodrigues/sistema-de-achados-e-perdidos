@@ -1,18 +1,31 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import type { Local } from './models/local.interface.js';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+
+import { InjectRepository } from '@nestjs/typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
+
+import { LocalEntity } from './entities/local.entity.js';
+import { CriarLocalDto } from './dto/criar-local.dto.js';
+import { AtualizarLocalDto } from './dto/atualizar-local.dto.js';
 
 @Injectable()
 export class LocaisService {
-  private locais: Local[] = [];
+  constructor(
+    @InjectRepository(LocalEntity)
+    private readonly locaisRepository: Repository<LocalEntity>,
+  ) {}
 
-  private proximoId = 1;
-
-  listar(): Local[] {
-    return this.locais;
+  async listar(): Promise<LocalEntity[]> {
+    return this.locaisRepository.find();
   }
 
-  buscarPorId(id: number): Local {
-    const local = this.locais.find((local) => local.id === id);
+  async buscarPorId(id: number): Promise<LocalEntity> {
+    const local = await this.locaisRepository.findOne({
+      where: { id },
+    });
 
     if (!local) {
       throw new NotFoundException('Local não encontrado');
@@ -21,37 +34,68 @@ export class LocaisService {
     return local;
   }
 
-  adicionar(dados: Omit<Local, 'id'>): Local {
-    const novoLocal: Local = {
-      id: this.proximoId++,
-      ...dados,
-    };
+  async adicionar(dados: CriarLocalDto): Promise<LocalEntity> {
+    const nome = dados.nome.trim();
 
-    this.locais.push(novoLocal);
+    const localExistente = await this.locaisRepository.findOne({
+      where: { nome },
+    });
 
-    return novoLocal;
-  }
-
-  atualizar(
-    id: number,
-    dados: Partial<Omit<Local, 'id'>>,
-  ): Local {
-    const local = this.buscarPorId(id);
-
-    Object.assign(local, dados);
-
-    return local;
-  }
-
-  remover(id: number): void {
-    const indice = this.locais.findIndex(
-      (local) => local.id === id,
-    );
-
-    if (indice === -1) {
-      throw new NotFoundException('Local não encontrado');
+    if (localExistente) {
+      throw new ConflictException('Local já cadastrado');
     }
 
-    this.locais.splice(indice, 1);
+    const novoLocal = this.locaisRepository.create({
+      nome,
+      descricao: dados.descricao ?? null,
+    });
+
+    return this.locaisRepository.save(novoLocal);
+  }
+
+  async atualizar(
+    id: number,
+    dados: AtualizarLocalDto,
+  ): Promise<LocalEntity> {
+    const local = await this.buscarPorId(id);
+
+    if (dados.nome !== undefined) {
+      const nome = dados.nome.trim();
+
+      const localExistente = await this.locaisRepository.findOne({
+        where: { nome },
+      });
+
+      if (localExistente && localExistente.id !== id) {
+        throw new ConflictException('Local já cadastrado');
+      }
+
+      local.nome = nome;
+    }
+
+    if (dados.descricao !== undefined) {
+      local.descricao = dados.descricao;
+    }
+
+    return this.locaisRepository.save(local);
+  }
+
+  async remover(id: number): Promise<void> {
+    await this.buscarPorId(id);
+
+    try {
+      await this.locaisRepository.delete(id);
+    } catch (erro) {
+      if (
+        erro instanceof QueryFailedError &&
+        (erro.driverError as { code?: string })?.code === '23503'
+      ) {
+        throw new ConflictException(
+          'Não é possível excluir um local associado a objetos',
+        );
+      }
+
+      throw erro;
+    }
   }
 }

@@ -1,85 +1,155 @@
 
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { DevolucaoRepository } from './devolucao.repository.js';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { DevolucaoEntity } from './entities/devolucao.entity.js';
+import { ObjetoEntity } from '../objetos/entities/objeto.entity.js';
+import { UsuarioEntity } from '../usuarios/entities/usuario.entity.js';
 import type { Devolucao } from './devolucao.interface.js';
-import { ObjetosRepositoryService } from '../objetos/objetos-repository/objetos-repository.service.js';
-import { UsuariosService } from '../usuarios/usuarios.service.js';
 
 @Injectable()
 export class DevolucaoService {
   constructor(
-    private readonly devolucaoRepository: DevolucaoRepository,
-    private readonly objetosRepository: ObjetosRepositoryService,
-    private readonly usuariosService: UsuariosService,
+    @InjectRepository(DevolucaoEntity)
+    private readonly devolucoes: Repository<DevolucaoEntity>,
+    @InjectRepository(ObjetoEntity)
+    private readonly objetos: Repository<ObjetoEntity>,
+    @InjectRepository(UsuarioEntity)
+    private readonly usuarios: Repository<UsuarioEntity>,
   ) {}
 
-  listar(): Devolucao[] {
-    return this.devolucaoRepository.listar();
+  async listar(): Promise<Devolucao[]> {
+    const registros = await this.devolucoes.find({
+      relations: { objeto: true, usuario: true },
+      order: { id: 'ASC' },
+    });
+
+    return registros.map((item) => this.converter(item));
   }
 
-  buscarPorId(id: number): Devolucao {
-    const devolucao = this.devolucaoRepository.buscarPorId(id);
+  async buscarPorId(id: number): Promise<Devolucao> {
+    const registro = await this.devolucoes.findOne({
+      where: { id },
+      relations: { objeto: true, usuario: true },
+    });
 
-    if (!devolucao) {
+    if (!registro) {
       throw new NotFoundException('Devolução não encontrada');
     }
 
-    return devolucao;
+    return this.converter(registro);
   }
 
-  adicionar(
+  async adicionar(
     dados: Omit<Devolucao, 'id' | 'dataDevolucao'>,
-  ): Devolucao {
-    const objeto = this.objetosRepository.buscarPorId(dados.objetoId);
+  ): Promise<Devolucao> {
+    const objeto = await this.objetos.findOneBy({
+      id: dados.objetoId,
+    });
 
     if (!objeto) {
       throw new NotFoundException('Objeto não encontrado');
     }
 
-    if (objeto.status === 'devolvido') {
-      throw new NotFoundException('Este objeto já foi devolvido');
-    }
-
-    const usuario = this.usuariosService.buscarPorId(dados.usuarioId);
+    const usuario = await this.usuarios.findOneBy({
+      id: dados.usuarioId,
+    });
 
     if (!usuario) {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    const objetoAtualizado = this.objetosRepository.atualizar(
-      dados.objetoId,
-      { status: 'devolvido' },
-    );
-
-    if (!objetoAtualizado) {
-      throw new NotFoundException('Não foi possível atualizar o objeto');
-    }
-
-    return this.devolucaoRepository.adicionar({
-      ...dados,
-      dataDevolucao: new Date(),
+    const devolucaoExistente = await this.devolucoes.findOne({
+      where: { objeto: { id: dados.objetoId } },
     });
+
+    if (devolucaoExistente) {
+      throw new ConflictException(
+        'Este objeto já possui uma devolução registrada',
+      );
+    }
+
+    const registro = this.devolucoes.create({
+      objeto,
+      usuario,
+    });
+
+    const salvo = await this.devolucoes.save(registro);
+
+    return this.buscarPorId(salvo.id);
   }
 
-  atualizar(
+  async atualizar(
     id: number,
-    dados: Partial<Omit<Devolucao, 'id'>>,
-  ): Devolucao {
-    const devolucaoAtualizada =
-      this.devolucaoRepository.atualizar(id, dados);
+    dados: Partial<Omit<Devolucao, 'id' | 'dataDevolucao'>>,
+  ): Promise<Devolucao> {
+    const registro = await this.devolucoes.findOne({
+      where: { id },
+      relations: { objeto: true, usuario: true },
+    });
 
-    if (!devolucaoAtualizada) {
+    if (!registro) {
       throw new NotFoundException('Devolução não encontrada');
     }
 
-    return devolucaoAtualizada;
+    if (dados.objetoId !== undefined) {
+      const objeto = await this.objetos.findOneBy({
+        id: dados.objetoId,
+      });
+
+      if (!objeto) {
+        throw new NotFoundException('Objeto não encontrado');
+      }
+
+      const outraDevolucao = await this.devolucoes.findOne({
+        where: { objeto: { id: dados.objetoId } },
+      });
+
+      if (outraDevolucao && outraDevolucao.id !== id) {
+        throw new ConflictException(
+          'Este objeto já possui uma devolução registrada',
+        );
+      }
+
+      registro.objeto = objeto;
+    }
+
+    if (dados.usuarioId !== undefined) {
+      const usuario = await this.usuarios.findOneBy({
+        id: dados.usuarioId,
+      });
+
+      if (!usuario) {
+        throw new NotFoundException('Usuário não encontrado');
+      }
+
+      registro.usuario = usuario;
+    }
+
+    await this.devolucoes.save(registro);
+
+    return this.buscarPorId(id);
   }
 
-  remover(id: number): void {
-    const removida = this.devolucaoRepository.remover(id);
+  async remover(id: number): Promise<void> {
+    const resultado = await this.devolucoes.delete(id);
 
-    if (!removida) {
+    if (!resultado.affected) {
       throw new NotFoundException('Devolução não encontrada');
     }
+  }
+
+  private converter(registro: DevolucaoEntity): Devolucao {
+    return {
+      id: registro.id,
+      objetoId: registro.objeto.id,
+      usuarioId: registro.usuario.id,
+      dataDevolucao: registro.dataDevolucao,
+    };
   }
 }

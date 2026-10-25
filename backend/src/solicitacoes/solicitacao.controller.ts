@@ -1,8 +1,10 @@
+
 import {
   Body,
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -27,16 +29,28 @@ export class SolicitacaoController {
   }
 
   @Get(':id')
-  buscarPorId(@Param('id') id: string): Solicitacao | undefined {
-    return this.solicitacaoService.buscarPorId(Number(id));
+  buscarPorId(@Param('id') id: string): Solicitacao {
+    const solicitacao = this.solicitacaoService.buscarPorId(Number(id));
+
+    if (!solicitacao) {
+      throw new NotFoundException('Solicitação não encontrada');
+    }
+
+    return solicitacao;
   }
 
   @Patch(':id')
   atualizar(
     @Param('id') id: string,
     @Body() dados: Partial<Solicitacao>,
-  ): Solicitacao | undefined {
-    return this.solicitacaoService.atualizar(Number(id), dados);
+  ): Solicitacao {
+    const solicitacao = this.solicitacaoService.atualizar(Number(id), dados);
+
+    if (!solicitacao) {
+      throw new NotFoundException('Solicitação não encontrada');
+    }
+
+    return solicitacao;
   }
 
   @Delete(':id')

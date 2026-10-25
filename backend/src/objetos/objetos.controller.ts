@@ -1,14 +1,28 @@
+
 import { Controller, Get } from '@nestjs/common';
-import { ObjetosRepositoryService } from './objetos-repository/objetos-repository.service.js';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { ObjetoEntity } from './entities/objeto.entity.js';
 
 @Controller('objetos')
 export class ObjetosController {
   constructor(
-    private readonly objetosRepository: ObjetosRepositoryService,
+    @InjectRepository(ObjetoEntity)
+    private readonly objetosRepository: Repository<ObjetoEntity>,
   ) {}
 
   @Get()
-  listar() {
-    return this.objetosRepository.listar();
+  listar(): Promise<ObjetoEntity[]> {
+    return this.objetosRepository.find({
+      relations: {
+        categoria: true,
+        localEncontrado: true,
+        usuario: true,
+      },
+      order: {
+        id: 'ASC',
+      },
+    });
   }
 }

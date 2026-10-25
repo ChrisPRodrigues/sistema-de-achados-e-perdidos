@@ -1,67 +1,149 @@
 
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { ObjetosRepositoryService } from '../objetos-repository/objetos-repository.service.js';
-import type { Objeto } from '../models/objeto/objeto.interface.js';
-import { DevolucaoRepository } from '../../devolucoes/devolucao.repository.js';
-import { UsuariosService } from '../../usuarios/usuarios.service.js';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { ObjetoEntity } from '../entities/objeto.entity.js';
+import { CategoriaEntity } from '../../categorias/entities/categoria.entity.js';
+import { LocalEntity } from '../../locais/entities/local.entity.js';
+import { UsuarioEntity } from '../../usuarios/entities/usuario.entity.js';
+import { DevolucaoEntity } from '../../devolucoes/entities/devolucao.entity.js';
+
+type DadosAtualizacaoObjeto = {
+  nome?: string;
+  descricao?: string;
+  categoriaId?: number;
+  localId?: number;
+  dataEncontrado?: Date;
+};
 
 @Injectable()
 export class GerenciamentoService {
   constructor(
-    private readonly objetosRepository: ObjetosRepositoryService,
-    private readonly devolucaoRepository: DevolucaoRepository,
-    private readonly usuariosService: UsuariosService,
+    @InjectRepository(ObjetoEntity)
+    private readonly objetosRepository: Repository<ObjetoEntity>,
+
+    @InjectRepository(CategoriaEntity)
+    private readonly categoriasRepository: Repository<CategoriaEntity>,
+
+    @InjectRepository(LocalEntity)
+    private readonly locaisRepository: Repository<LocalEntity>,
+
+    @InjectRepository(UsuarioEntity)
+    private readonly usuariosRepository: Repository<UsuarioEntity>,
+
+    @InjectRepository(DevolucaoEntity)
+    private readonly devolucoesRepository: Repository<DevolucaoEntity>,
   ) {}
 
-  atualizar(
+  async atualizar(
     id: number,
-    dados: Partial<Omit<Objeto, 'id'>>,
-  ): Objeto {
-    const objetoAtualizado = this.objetosRepository.atualizar(id, dados);
+    dados: DadosAtualizacaoObjeto,
+  ): Promise<ObjetoEntity> {
+    const objeto = await this.buscarObjeto(id);
 
-    if (!objetoAtualizado) {
-      throw new NotFoundException('Objeto não encontrado');
+    if (dados.nome !== undefined) {
+      objeto.nome = dados.nome;
     }
 
-    return objetoAtualizado;
+    if (dados.descricao !== undefined) {
+      objeto.descricao = dados.descricao;
+    }
+
+    if (dados.dataEncontrado !== undefined) {
+      objeto.dataEncontrado = dados.dataEncontrado;
+    }
+
+    if (dados.categoriaId !== undefined) {
+      const categoria = await this.categoriasRepository.findOneBy({
+        id: dados.categoriaId,
+      });
+
+      if (!categoria) {
+        throw new NotFoundException('Categoria não encontrada');
+      }
+
+      objeto.categoria = categoria;
+    }
+
+    if (dados.localId !== undefined) {
+      const local = await this.locaisRepository.findOneBy({
+        id: dados.localId,
+      });
+
+      if (!local) {
+        throw new NotFoundException('Local não encontrado');
+      }
+
+      objeto.localEncontrado = local;
+    }
+
+    await this.objetosRepository.save(objeto);
+
+    return this.buscarObjeto(id);
   }
 
-  devolver(
+  async devolver(
     id: number,
     usuarioId: number,
-    observacao?: string,
-  ): Objeto {
-    const objeto = this.objetosRepository.buscarPorId(id);
-
-    if (!objeto) {
-      throw new NotFoundException('Objeto não encontrado');
-    }
+    _observacao?: string,
+  ): Promise<ObjetoEntity> {
+    const objeto = await this.buscarObjeto(id);
 
     if (objeto.status === 'devolvido') {
-      throw new NotFoundException('Este objeto já foi devolvido');
+      throw new ConflictException('Este objeto já foi devolvido');
     }
 
-    const usuario = this.usuariosService.buscarPorId(usuarioId);
+    const usuario = await this.usuariosRepository.findOneBy({
+      id: usuarioId,
+    });
 
     if (!usuario) {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    const objetoAtualizado = this.objetosRepository.atualizar(id, {
-      status: 'devolvido',
-    });
-
-    if (!objetoAtualizado) {
-      throw new NotFoundException('Não foi possível atualizar o objeto');
+    if (usuario.tipo !== 'docente') {
+      throw new BadRequestException(
+        'Somente docentes podem registrar devoluções',
+      );
     }
 
-    this.devolucaoRepository.adicionar({
-      objetoId: id,
-      usuarioId,
-      dataDevolucao: new Date(),
-      observacao,
+    await this.devolucoesRepository.manager.transaction(
+      async (manager) => {
+        objeto.status = 'devolvido';
+        await manager.save(ObjetoEntity, objeto);
+
+        const devolucao = manager.create(DevolucaoEntity, {
+          objeto,
+          usuario,
+        });
+
+        await manager.save(DevolucaoEntity, devolucao);
+      },
+    );
+
+    return this.buscarObjeto(id);
+  }
+
+  private async buscarObjeto(id: number): Promise<ObjetoEntity> {
+    const objeto = await this.objetosRepository.findOne({
+      where: { id },
+      relations: {
+        categoria: true,
+        localEncontrado: true,
+        usuario: true,
+      },
     });
 
-    return objetoAtualizado;
+    if (!objeto) {
+      throw new NotFoundException('Objeto não encontrado');
+    }
+
+    return objeto;
   }
 }

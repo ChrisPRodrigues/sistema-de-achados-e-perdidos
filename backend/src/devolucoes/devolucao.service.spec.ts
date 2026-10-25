@@ -1,120 +1,101 @@
-
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NotFoundException } from '@nestjs/common';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { DevolucaoService } from './devolucao.service.js';
 
 describe('DevolucaoService', () => {
   let service: DevolucaoService;
 
-  const devolucaoRepository = {
-    listar: vi.fn(),
-    buscarPorId: vi.fn(),
-    adicionar: vi.fn(),
-    atualizar: vi.fn(),
-    remover: vi.fn(),
+  const devolucoes = {
+    find: vi.fn(),
+    findOne: vi.fn(),
+    create: vi.fn(),
+    save: vi.fn(),
+    delete: vi.fn(),
   };
 
-  const objetosRepository = {
-    buscarPorId: vi.fn(),
-    atualizar: vi.fn(),
+  const objetos = {
+    findOneBy: vi.fn(),
   };
 
-  const usuariosService = {
-    buscarPorId: vi.fn(),
+  const usuarios = {
+    findOneBy: vi.fn(),
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
 
     service = new DevolucaoService(
-      devolucaoRepository as any,
-      objetosRepository as any,
-      usuariosService as any,
+      devolucoes as any,
+      objetos as any,
+      usuarios as any,
     );
   });
 
-  it('deve lançar erro quando o objeto não existir', () => {
-    objetosRepository.buscarPorId.mockReturnValue(undefined);
+  it('deve lançar erro quando o objeto não existir', async () => {
+    objetos.findOneBy.mockResolvedValue(null);
 
-    expect(() =>
-      service.adicionar({
-        objetoId: 1,
-        usuarioId: 1,
-        observacao: 'Teste',
-      }),
-    ).toThrow(NotFoundException);
+    await expect(
+      service.adicionar({ objetoId: 1, usuarioId: 1 }),
+    ).rejects.toThrow(NotFoundException);
 
-    expect(devolucaoRepository.adicionar).not.toHaveBeenCalled();
+    expect(usuarios.findOneBy).not.toHaveBeenCalled();
+    expect(devolucoes.save).not.toHaveBeenCalled();
   });
 
-  it('deve lançar erro quando o usuário não existir', () => {
-    objetosRepository.buscarPorId.mockReturnValue({
-      id: 1,
-      status: 'encontrado',
-    });
+  it('deve lançar erro quando o usuário não existir', async () => {
+    objetos.findOneBy.mockResolvedValue({ id: 1 });
+    usuarios.findOneBy.mockResolvedValue(null);
 
-    usuariosService.buscarPorId.mockReturnValue(undefined);
+    await expect(
+      service.adicionar({ objetoId: 1, usuarioId: 99 }),
+    ).rejects.toThrow(NotFoundException);
 
-    expect(() =>
-      service.adicionar({
-        objetoId: 1,
-        usuarioId: 99,
-        observacao: 'Teste',
-      }),
-    ).toThrow(NotFoundException);
-
-    expect(devolucaoRepository.adicionar).not.toHaveBeenCalled();
+    expect(devolucoes.save).not.toHaveBeenCalled();
   });
 
-  it('deve registrar a devolução quando o objeto e o usuário existirem', () => {
-    objetosRepository.buscarPorId.mockReturnValue({
-      id: 1,
-      status: 'encontrado',
-    });
+  it('deve impedir uma segunda devolução do mesmo objeto', async () => {
+    objetos.findOneBy.mockResolvedValue({ id: 1 });
+    usuarios.findOneBy.mockResolvedValue({ id: 1 });
+    devolucoes.findOne.mockResolvedValue({ id: 10 });
 
-    usuariosService.buscarPorId.mockReturnValue({ id: 1 });
+    await expect(
+      service.adicionar({ objetoId: 1, usuarioId: 1 }),
+    ).rejects.toThrow(ConflictException);
 
-    objetosRepository.atualizar.mockReturnValue({
-      id: 1,
-      status: 'devolvido',
-    });
+    expect(devolucoes.save).not.toHaveBeenCalled();
+  });
 
-    devolucaoRepository.adicionar.mockImplementation((dados) => ({
-      id: 1,
-      ...dados,
-    }));
+  it('deve registrar a devolução quando objeto e usuário existirem', async () => {
+    const dataDevolucao = new Date();
+    const objeto = { id: 1 };
+    const usuario = { id: 2 };
+    const registroSalvo = {
+      id: 5,
+      objeto,
+      usuario,
+      dataDevolucao,
+    };
 
-    const resultado = service.adicionar({
+    objetos.findOneBy.mockResolvedValue(objeto);
+    usuarios.findOneBy.mockResolvedValue(usuario);
+    devolucoes.findOne
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(registroSalvo);
+    devolucoes.create.mockReturnValue({ objeto, usuario });
+    devolucoes.save.mockResolvedValue({ id: 5 });
+
+    const resultado = await service.adicionar({
       objetoId: 1,
-      usuarioId: 1,
-      observacao: 'Devolução de teste',
+      usuarioId: 2,
     });
 
-    expect(objetosRepository.atualizar).toHaveBeenCalledWith(1, {
-      status: 'devolvido',
+    expect(devolucoes.create).toHaveBeenCalledWith({ objeto, usuario });
+    expect(devolucoes.save).toHaveBeenCalledOnce();
+    expect(resultado).toEqual({
+      id: 5,
+      objetoId: 1,
+      usuarioId: 2,
+      dataDevolucao,
     });
-    expect(devolucaoRepository.adicionar).toHaveBeenCalledOnce();
-    expect(resultado.id).toBe(1);
-    expect(resultado.dataDevolucao).toBeInstanceOf(Date);
-    expect(resultado.observacao).toBe('Devolução de teste');
-  });
-
-  it('deve impedir devolução de objeto já devolvido', () => {
-    objetosRepository.buscarPorId.mockReturnValue({
-      id: 1,
-      status: 'devolvido',
-    });
-
-    expect(() =>
-      service.adicionar({
-        objetoId: 1,
-        usuarioId: 1,
-        observacao: 'Tentativa duplicada',
-      }),
-    ).toThrow('Este objeto já foi devolvido');
-
-    expect(usuariosService.buscarPorId).not.toHaveBeenCalled();
-    expect(objetosRepository.atualizar).not.toHaveBeenCalled();
-    expect(devolucaoRepository.adicionar).not.toHaveBeenCalled();
   });
 });

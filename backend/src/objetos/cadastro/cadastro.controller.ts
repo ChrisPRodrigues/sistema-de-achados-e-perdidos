@@ -1,17 +1,26 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+
 import { CadastroService } from './cadastro.service.js';
-import type { Objeto } from '../models/objeto/objeto.interface.js';
+import { ObjetoEntity } from '../entities/objeto.entity.js';
+import { CriarObjetoDto } from '../dto/criar-objeto.dto.js';
 
 @Controller('objetos')
 export class CadastroController {
-  constructor(private readonly cadastroService: CadastroService) {}
+  constructor(
+    private readonly cadastroService: CadastroService,
+  ) {}
 
   @Post()
-  cadastrar(@Body() dados: Omit<Objeto, 'id' | 'status'>): Objeto {
+  cadastrar(
+    @Body() dados: CriarObjetoDto,
+  ): Promise<ObjetoEntity> {
     return this.cadastroService.cadastrar(dados);
   }
+
   @Get(':id')
-  buscarPorId(@Param('id') id: string): Objeto {
-    return this.cadastroService.buscarPorId(Number(id));
+  buscarPorId(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ObjetoEntity> {
+    return this.cadastroService.buscarPorId(id);
   }
 }
