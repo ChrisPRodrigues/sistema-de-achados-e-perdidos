@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ObjetosController } from './objetos.controller';
-import { ObjetosRepositoryService } from './objetos-repository/objetos-repository.service';
+import { ObjetosController } from './objetos.controller.js';
+import { ObjetosRepositoryService } from './objetos-repository/objetos-repository.service.js';
 
 describe('ObjetosController', () => {
   let controller: ObjetosController;
