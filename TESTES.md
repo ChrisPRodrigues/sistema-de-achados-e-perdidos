@@ -77,19 +77,7 @@ Foram realizadas as seguintes modificações:
 - Restrição das atualizações de devolução ao campo observacao.
 - Ajuste da exclusão para restaurar o status do objeto.
 
-## 5. Testes de integração pendentes
-
-Ainda precisam ser realizados com PostgreSQL:
-
-- Execução e verificação das migrations.
-- Cadastro e consulta de devoluções no banco.
-- Verificação da persistência da observação.
-- Teste das duas rotas de devolução após a unificação.
-- Verificação da integridade referencial com IDs inexistentes.
-- Teste de exclusão com restauração do status do objeto.
-- Verificação de devoluções simultâneas.
-
-## 6. Resultado
+## 5. Resultado
 
 A compilação do projeto foi concluída com sucesso e os 15 testes automatizados passaram.
 
