@@ -1,4 +1,5 @@
 import {
+  Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
@@ -22,6 +23,13 @@ export class DevolucaoEntity {
   @ManyToOne(() => UsuarioEntity, { nullable: false })
   @JoinColumn({ name: 'usuario_id' })
   usuario: UsuarioEntity;
+
+  @Column({
+    type: 'varchar',
+    length: 500,
+    nullable: true
+  })
+  observacao: string | null;
 
   @CreateDateColumn({ type: 'timestamp' })
   dataDevolucao: Date;

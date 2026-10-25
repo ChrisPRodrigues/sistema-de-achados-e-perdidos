@@ -1,9 +1,7 @@
 
 import {
   Injectable,
-  NotFoundException,
-  BadRequestException,
-  ConflictException,
+  NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,8 +9,7 @@ import { Repository } from 'typeorm';
 import { ObjetoEntity } from '../entities/objeto.entity.js';
 import { CategoriaEntity } from '../../categorias/entities/categoria.entity.js';
 import { LocalEntity } from '../../locais/entities/local.entity.js';
-import { UsuarioEntity } from '../../usuarios/entities/usuario.entity.js';
-import { DevolucaoEntity } from '../../devolucoes/entities/devolucao.entity.js';
+import { DevolucaoService } from '../../devolucoes/devolucao.service.js';
 
 type DadosAtualizacaoObjeto = {
   nome?: string;
@@ -34,11 +31,7 @@ export class GerenciamentoService {
     @InjectRepository(LocalEntity)
     private readonly locaisRepository: Repository<LocalEntity>,
 
-    @InjectRepository(UsuarioEntity)
-    private readonly usuariosRepository: Repository<UsuarioEntity>,
-
-    @InjectRepository(DevolucaoEntity)
-    private readonly devolucoesRepository: Repository<DevolucaoEntity>,
+    private readonly devolucoesService: DevolucaoService,
   ) {}
 
   async atualizar(
@@ -88,47 +81,20 @@ export class GerenciamentoService {
     return this.buscarObjeto(id);
   }
 
-  async devolver(
-    id: number,
-    usuarioId: number,
-    _observacao?: string,
-  ): Promise<ObjetoEntity> {
-    const objeto = await this.buscarObjeto(id);
 
-    if (objeto.status === 'devolvido') {
-      throw new ConflictException('Este objeto já foi devolvido');
-    }
+async devolver(
+  id: number,
+  usuarioId: number,
+  observacao?: string,
+): Promise<ObjetoEntity> {
+  await this.devolucoesService.adicionar({
+    objetoId: id,
+    usuarioId,
+    observacao,
+  });
 
-    const usuario = await this.usuariosRepository.findOneBy({
-      id: usuarioId,
-    });
-
-    if (!usuario) {
-      throw new NotFoundException('Usuário não encontrado');
-    }
-
-    if (usuario.tipo !== 'docente') {
-      throw new BadRequestException(
-        'Somente docentes podem registrar devoluções',
-      );
-    }
-
-    await this.devolucoesRepository.manager.transaction(
-      async (manager) => {
-        objeto.status = 'devolvido';
-        await manager.save(ObjetoEntity, objeto);
-
-        const devolucao = manager.create(DevolucaoEntity, {
-          objeto,
-          usuario,
-        });
-
-        await manager.save(DevolucaoEntity, devolucao);
-      },
-    );
-
-    return this.buscarObjeto(id);
-  }
+  return this.buscarObjeto(id);
+}
 
   private async buscarObjeto(id: number): Promise<ObjetoEntity> {
     const objeto = await this.objetosRepository.findOne({

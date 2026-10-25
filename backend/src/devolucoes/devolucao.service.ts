@@ -1,5 +1,6 @@
 
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -16,11 +17,7 @@ import type { Devolucao } from './devolucao.interface.js';
 export class DevolucaoService {
   constructor(
     @InjectRepository(DevolucaoEntity)
-    private readonly devolucoes: Repository<DevolucaoEntity>,
-    @InjectRepository(ObjetoEntity)
-    private readonly objetos: Repository<ObjetoEntity>,
-    @InjectRepository(UsuarioEntity)
-    private readonly usuarios: Repository<UsuarioEntity>,
+    private readonly devolucoes: Repository<DevolucaoEntity>
   ) {}
 
   async listar(): Promise<Devolucao[]> {
@@ -45,104 +42,166 @@ export class DevolucaoService {
     return this.converter(registro);
   }
 
-  async adicionar(
-    dados: Omit<Devolucao, 'id' | 'dataDevolucao'>,
-  ): Promise<Devolucao> {
-    const objeto = await this.objetos.findOneBy({
-      id: dados.objetoId,
-    });
 
-    if (!objeto) {
-      throw new NotFoundException('Objeto não encontrado');
-    }
-
-    const usuario = await this.usuarios.findOneBy({
-      id: dados.usuarioId,
-    });
-
-    if (!usuario) {
-      throw new NotFoundException('Usuário não encontrado');
-    }
-
-    const devolucaoExistente = await this.devolucoes.findOne({
-      where: { objeto: { id: dados.objetoId } },
-    });
-
-    if (devolucaoExistente) {
-      throw new ConflictException(
-        'Este objeto já possui uma devolução registrada',
-      );
-    }
-
-    const registro = this.devolucoes.create({
-      objeto,
-      usuario,
-    });
-
-    const salvo = await this.devolucoes.save(registro);
-
-    return this.buscarPorId(salvo.id);
-  }
-
-  async atualizar(
-    id: number,
-    dados: Partial<Omit<Devolucao, 'id' | 'dataDevolucao'>>,
-  ): Promise<Devolucao> {
-    const registro = await this.devolucoes.findOne({
-      where: { id },
-      relations: { objeto: true, usuario: true },
-    });
-
-    if (!registro) {
-      throw new NotFoundException('Devolução não encontrada');
-    }
-
-    if (dados.objetoId !== undefined) {
-      const objeto = await this.objetos.findOneBy({
-        id: dados.objetoId,
-      });
+async adicionar(
+  dados: Omit<Devolucao, 'id' | 'dataDevolucao'>,
+): Promise<Devolucao> {
+  const registroId = await this.devolucoes.manager.transaction(
+    async (manager) => {
+      // Busca e bloqueia o objeto durante a transação
+      const objeto = await manager
+        .getRepository(ObjetoEntity)
+        .createQueryBuilder('objeto')
+        .setLock('pessimistic_write')
+        .where('objeto.id = :id', { id: dados.objetoId })
+        .getOne();
 
       if (!objeto) {
         throw new NotFoundException('Objeto não encontrado');
       }
 
-      const outraDevolucao = await this.devolucoes.findOne({
-        where: { objeto: { id: dados.objetoId } },
-      });
+      if (objeto.status === 'devolvido') {
+        throw new ConflictException(
+          'Este objeto já foi devolvido',
+        );
+      }
 
-      if (outraDevolucao && outraDevolucao.id !== id) {
+      // Verifica se já existe devolução registrada
+      const devolucaoExistente = await manager
+        .getRepository(DevolucaoEntity)
+        .findOne({
+          where: { objeto: { id: objeto.id } },
+        });
+
+      if (devolucaoExistente) {
         throw new ConflictException(
           'Este objeto já possui uma devolução registrada',
         );
       }
 
-      registro.objeto = objeto;
-    }
-
-    if (dados.usuarioId !== undefined) {
-      const usuario = await this.usuarios.findOneBy({
-        id: dados.usuarioId,
-      });
+      // Verifica se o usuário existe
+      const usuario = await manager
+        .getRepository(UsuarioEntity)
+        .findOneBy({ id: dados.usuarioId });
 
       if (!usuario) {
         throw new NotFoundException('Usuário não encontrado');
       }
 
-      registro.usuario = usuario;
-    }
+      // Somente docentes podem registrar devoluções
+      if (usuario.tipo !== 'docente') {
+        throw new BadRequestException(
+          'Somente docentes podem registrar devoluções',
+        );
+      }
 
-    await this.devolucoes.save(registro);
+      // Atualiza o status do objeto
+      objeto.status = 'devolvido';
+      await manager.save(ObjetoEntity, objeto);
 
-    return this.buscarPorId(id);
+      // Registra a devolução
+      const devolucao = manager.create(DevolucaoEntity, {
+        objeto,
+        usuario,
+        observacao: dados.observacao ?? null,
+      });
+
+      const salvo = await manager.save(
+        DevolucaoEntity,
+        devolucao,
+      );
+
+      return salvo.id;
+    },
+  );
+
+  return this.buscarPorId(registroId);
+}
+
+
+async atualizar(
+  id: number,
+  dados: { observacao?: string },
+): Promise<Devolucao> {
+  const registro = await this.devolucoes.findOne({
+    where: { id },
+    relations: {
+      objeto: true,
+      usuario: true,
+    },
+  });
+
+  if (!registro) {
+    throw new NotFoundException(
+      'Devolução não encontrada',
+    );
   }
 
-  async remover(id: number): Promise<void> {
-    const resultado = await this.devolucoes.delete(id);
-
-    if (!resultado.affected) {
-      throw new NotFoundException('Devolução não encontrada');
-    }
+  if (dados.observacao !== undefined) {
+    registro.observacao = dados.observacao;
   }
+
+  await this.devolucoes.save(registro);
+
+  return this.buscarPorId(id);
+}
+
+
+async remover(id: number): Promise<void> {
+  await this.devolucoes.manager.transaction(
+    async (manager) => {
+      const devolucoesRepository =
+        manager.getRepository(DevolucaoEntity);
+
+      // Busca a devolução e seu objeto
+      const devolucao = await devolucoesRepository.findOne({
+        where: { id },
+        relations: { objeto: true },
+      });
+
+      if (!devolucao) {
+        throw new NotFoundException(
+          'Devolução não encontrada',
+        );
+      }
+
+      // Bloqueia o objeto durante a transação
+      const objeto = await manager
+        .getRepository(ObjetoEntity)
+        .createQueryBuilder('objeto')
+        .setLock('pessimistic_write')
+        .where('objeto.id = :id', {
+          id: devolucao.objeto.id,
+        })
+        .getOne();
+
+      if (!objeto) {
+        throw new NotFoundException(
+          'Objeto não encontrado',
+        );
+      }
+
+      // Confirma que a devolução ainda existe
+      const registroAtual = await devolucoesRepository.findOneBy({
+        id,
+      });
+
+      if (!registroAtual) {
+        throw new NotFoundException(
+          'Devolução não encontrada',
+        );
+      }
+
+      // Exclui a devolução
+      await devolucoesRepository.remove(registroAtual);
+
+      // Restaura o status do objeto
+      objeto.status = 'encontrado';
+
+      await manager.save(ObjetoEntity, objeto);
+    },
+  );
+}
 
   private converter(registro: DevolucaoEntity): Devolucao {
     return {
@@ -150,6 +209,7 @@ export class DevolucaoService {
       objetoId: registro.objeto.id,
       usuarioId: registro.usuario.id,
       dataDevolucao: registro.dataDevolucao,
+      observacao: registro.observacao ?? undefined,
     };
   }
 }
