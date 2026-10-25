@@ -1,73 +1,89 @@
 # Sistema de Achados e Perdidos — IFPE
 
-Sistema web desenvolvido em **NestJS** para cadastrar, consultar e gerenciar objetos encontrados no IFPE.
+## Sobre o projeto
 
-## Objetivo
+Sistema web desenvolvido para o IFPE Campus Palmares, com o objetivo de facilitar o registro, a consulta e o gerenciamento de objetos perdidos e encontrados na instituição.
 
-Facilitar o registro e a devolução de objetos encontrados no campus.
+## Tecnologias utilizadas
 
-## Tecnologias
+- NestJS
+- TypeScript
+- PostgreSQL
+- TypeORM
+- Docker
+- Vitest
+- Git e GitHub
 
-- **NestJS**
-- **TypeScript**
-- **Node.js**
-- **Vitest**
-- **Git e GitHub**
+## Principais funcionalidades
 
-## Funcionalidades
+- Cadastro, consulta e atualização de objetos.
+- Gerenciamento de categorias e locais.
+- Cadastro e gerenciamento de usuários.
+- Registro de devoluções.
+- Validação de dados e relacionamentos entre registros.
 
-- Cadastrar objetos
-- Listar objetos
-- Buscar objeto por ID
-- Atualizar objeto
-- Registrar devolução
-- Alterar status entre `encontrado` e `devolvido`
+## Banco de dados
 
-## Como Executar
+O sistema utiliza PostgreSQL para armazenar os dados e TypeORM para mapear as entidades e gerenciar as migrações.
 
-1. Instale as dependências e inicie o servidor:
+As principais entidades do MVP são:
+
+- Objeto
+- Categoria
+- Local
+- Usuário
+- Devolução
+
+A integração de solicitações, comprovantes e históricos ao banco de dados ficará para etapas futuras.
+
+## Como executar o projeto
+
+### Pré-requisitos
+
+- Node.js e npm
+- Docker
+- PostgreSQL
+
+### Instalação
+
+1. Acesse a pasta do backend:
+
    ```bash
    cd backend
+   ```
+
+2. Instale as dependências:
+
+   ```bash
    npm install
+   ```
+
+3. Configure as variáveis de ambiente do banco de dados no arquivo `.env`.
+
+4. Inicie o PostgreSQL e confirme que as configurações de conexão estão corretas.
+
+5. Execute as migrações pendentes:
+
+   ```bash
+   npm run migration:run
+   ```
+
+6. Inicie a aplicação:
+
+   ```bash
    npm run start:dev
    ```
 
-2. O servidor estará disponível em: [http://localhost:3000](http://localhost:3000)
+A aplicação ficará disponível em [http://localhost:3000](http://localhost:3000).
 
-## Exemplos de Uso
+## Testes automatizados
 
-### Cadastrar objeto
-`POST /objetos`
+Para executar os testes, utilize:
 
-**Request Body:**
-```json
-{
-  "nome": "Mochila",
-  "descricao": "Mochila preta encontrada no corredor",
-  "categoria": "Material escolar",
-  "localEncontrado": "Corredor",
-  "dataEncontrado": "2026-09-22",
-  "status": "encontrado"
-}
-```
-
-### Listar objetos
-`GET /objetos`
-
-### Buscar por ID
-`GET /objetos/1`
-
-### Atualizar objeto
-`PATCH /objetos/1`
-
-### Registrar devolução
-`PATCH /objetos/1/devolucao`
-
-## Testes
-
-Para executar os testes automatizados, utilize o comando:
 ```bash
 npm test
 ```
 
-> **Nota:** Os principais endpoints também foram testados manualmente durante o desenvolvimento.
+## Instituição
+
+Projeto acadêmico desenvolvido no curso de Análise e Desenvolvimento de Sistemas do Instituto Federal de Pernambuco (IFPE) — Campus Palmares.
