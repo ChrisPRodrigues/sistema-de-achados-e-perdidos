@@ -1,3 +1,4 @@
+
 import {
   Body,
   Controller,
@@ -21,36 +22,36 @@ export class DevolucaoController {
   ) {}
 
   @Get()
-  listar(): Devolucao[] {
+  listar(): Promise<Devolucao[]> {
     return this.devolucaoService.listar();
   }
 
   @Get(':id')
   buscarPorId(
     @Param('id', ParseIntPipe) id: number,
-  ): Devolucao {
+  ): Promise<Devolucao> {
     return this.devolucaoService.buscarPorId(id);
   }
 
-@Post()
-adicionar(
-  @Body() dados: CriarDevolucaoDto,
-): Devolucao {
-  return this.devolucaoService.adicionar(dados);
-}
+  @Post()
+  adicionar(
+    @Body() dados: CriarDevolucaoDto,
+  ): Promise<Devolucao> {
+    return this.devolucaoService.adicionar(dados);
+  }
 
   @Patch(':id')
   atualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() dados: AtualizarDevolucaoDto,
-  ): Devolucao {
+  ): Promise<Devolucao> {
     return this.devolucaoService.atualizar(id, dados);
   }
 
   @Delete(':id')
   remover(
     @Param('id', ParseIntPipe) id: number,
-  ): void {
+  ): Promise<void> {
     return this.devolucaoService.remover(id);
   }
 }
