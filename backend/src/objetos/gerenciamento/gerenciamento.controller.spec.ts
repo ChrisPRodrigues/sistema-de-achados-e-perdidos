@@ -10,6 +10,19 @@ describe('GerenciamentoController', () => {
     devolver: vi.fn(),
   };
 
+  const dataEncontrado = new Date('2026-10-25T10:00:00.000Z');
+
+  const objetoBase = {
+    id: 1,
+    nome: 'Celular',
+    descricao: 'Celular encontrado na biblioteca',
+    categoria: { id: 2 },
+    localEncontrado: { id: 3 },
+    usuario: { id: 2 },
+    dataEncontrado,
+    status: 'encontrado',
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -22,33 +35,40 @@ describe('GerenciamentoController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('deve chamar o serviço ao atualizar um objeto', () => {
+  it('deve chamar o serviço ao atualizar um objeto', async () => {
     const dados = { nome: 'Celular atualizado' };
 
-    gerenciamentoService.atualizar.mockReturnValue({
-      id: 1,
+    gerenciamentoService.atualizar.mockResolvedValue({
+      ...objetoBase,
       ...dados,
     });
 
-    const resultado = controller.atualizar(1, dados);
+    const resultado = await controller.atualizar(1, dados);
 
     expect(gerenciamentoService.atualizar).toHaveBeenCalledWith(
       1,
       dados,
     );
+
     expect(resultado).toEqual({
       id: 1,
       nome: 'Celular atualizado',
+      descricao: 'Celular encontrado na biblioteca',
+      categoriaId: 2,
+      localId: 3,
+      usuarioId: 2,
+      dataEncontrado,
+      status: 'encontrado',
     });
   });
 
-  it('deve chamar o serviço ao devolver um objeto', () => {
-    gerenciamentoService.devolver.mockReturnValue({
-      id: 1,
+  it('deve chamar o serviço ao devolver um objeto', async () => {
+    gerenciamentoService.devolver.mockResolvedValue({
+      ...objetoBase,
       status: 'devolvido',
     });
 
-    const resultado = controller.devolver(1, {
+    const resultado = await controller.devolver(1, {
       usuarioId: 2,
       observacao: 'Entregue ao proprietário',
     });
@@ -58,8 +78,15 @@ describe('GerenciamentoController', () => {
       2,
       'Entregue ao proprietário',
     );
+
     expect(resultado).toEqual({
       id: 1,
+      nome: 'Celular',
+      descricao: 'Celular encontrado na biblioteca',
+      categoriaId: 2,
+      localId: 3,
+      usuarioId: 2,
+      dataEncontrado,
       status: 'devolvido',
     });
   });

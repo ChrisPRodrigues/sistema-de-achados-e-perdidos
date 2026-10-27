@@ -6,10 +6,14 @@ import {
   Get,
   NotFoundException,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
 } from '@nestjs/common';
 import { SolicitacaoService } from './solicitacao.service.js';
+import { CriarSolicitacaoDto } from './dto/criar-solicitacao.dto.js';
+import { AtualizarSolicitacaoDto } from './dto/atualizar-solicitacao.dto.js';
+import { SolicitacaoRespostaDto } from './dto/solicitacao-resposta.dto.js';
 import type { Solicitacao } from './models/solicitacao/solicitacao.interface.js';
 
 @Controller('solicitacoes')
@@ -18,43 +22,62 @@ export class SolicitacaoController {
     private readonly solicitacaoService: SolicitacaoService,
   ) {}
 
+  private paraResposta(
+    solicitacao: Solicitacao
+  ): SolicitacaoRespostaDto {
+    return {
+      id: solicitacao.id,
+      usuarioId: solicitacao.usuarioId,
+      objetoId: solicitacao.objetoId,
+      status: solicitacao.status,
+    };
+  }
+
   @Get()
-  listar(): Solicitacao[] {
-    return this.solicitacaoService.listar();
+  listar(): SolicitacaoRespostaDto[] {
+    return this.solicitacaoService.listar().map((solicitacao) =>
+      this.paraResposta(solicitacao)
+    );
   }
 
   @Post()
-  cadastrar(@Body() solicitacao: Omit<Solicitacao, 'id'>): Solicitacao {
-    return this.solicitacaoService.cadastrar(solicitacao);
+  cadastrar(
+    @Body() solicitacao: CriarSolicitacaoDto): SolicitacaoRespostaDto {
+    return this.paraResposta(this.solicitacaoService.cadastrar(solicitacao));
   }
 
   @Get(':id')
-  buscarPorId(@Param('id') id: string): Solicitacao {
-    const solicitacao = this.solicitacaoService.buscarPorId(Number(id));
+  buscarPorId(
+    @Param('id', ParseIntPipe) id: number
+  ): SolicitacaoRespostaDto {
+    const solicitacao = this.solicitacaoService.buscarPorId(id);
 
     if (!solicitacao) {
       throw new NotFoundException('Solicitação não encontrada');
     }
 
-    return solicitacao;
+    return this.paraResposta(solicitacao);
   }
 
   @Patch(':id')
   atualizar(
-    @Param('id') id: string,
-    @Body() dados: Partial<Solicitacao>,
-  ): Solicitacao {
-    const solicitacao = this.solicitacaoService.atualizar(Number(id), dados);
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dados: AtualizarSolicitacaoDto,
+  ): SolicitacaoRespostaDto {
+    const solicitacao = this.solicitacaoService.atualizar(id, dados);
 
     if (!solicitacao) {
       throw new NotFoundException('Solicitação não encontrada');
     }
 
-    return solicitacao;
+    return this.paraResposta(solicitacao);
   }
 
   @Delete(':id')
-  remover(@Param('id') id: string): boolean {
-    return this.solicitacaoService.remover(Number(id));
+  remover(
+    @Param('id', ParseIntPipe) id: number
+  ): boolean {
+
+    return this.solicitacaoService.remover(id);
   }
 }
