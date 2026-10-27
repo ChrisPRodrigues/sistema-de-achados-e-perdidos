@@ -21,15 +21,27 @@ export class ObjetoEntity {
   @Column({ type: 'text' })
   descricao: string;
 
-  @ManyToOne(() => CategoriaEntity, { nullable: false })
+  // Impede excluir uma categoria que ainda possui objetos associados.
+  @ManyToOne(() => CategoriaEntity, {
+    nullable: false,
+    onDelete: 'NO ACTION',
+  })
   @JoinColumn({ name: 'categoria_id' })
   categoria: CategoriaEntity;
 
-  @ManyToOne(() => LocalEntity, { nullable: false })
+  // Impede excluir um local que ainda possui objetos associados.
+  @ManyToOne(() => LocalEntity, {
+    nullable: false,
+    onDelete: 'NO ACTION',
+  })
   @JoinColumn({ name: 'local_id' })
   localEncontrado: LocalEntity;
 
-  @ManyToOne(() => UsuarioEntity, { nullable: false })
+  // Impede excluir um usuário que ainda possui objetos associados.
+  @ManyToOne(() => UsuarioEntity, {
+    nullable: false,
+    onDelete: 'NO ACTION',
+  })
   @JoinColumn({ name: 'usuario_id' })
   usuario: UsuarioEntity;
 

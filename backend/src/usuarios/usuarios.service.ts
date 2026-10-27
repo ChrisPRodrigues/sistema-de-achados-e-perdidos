@@ -5,7 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 
 import { UsuarioEntity } from './entities/usuario.entity.js';
 
@@ -73,7 +73,21 @@ export class UsuariosService {
 
   async remover(id: number): Promise<{ mensagem: string }> {
     const usuario = await this.buscarPorId(id);
-    await this.usuariosRepository.remove(usuario);
+
+    try {
+      await this.usuariosRepository.remove(usuario);
+    } catch (erro) {
+      if (
+        erro instanceof QueryFailedError &&
+        (erro.driverError as { code?: string }).code === '23503'
+      ) {
+        throw new ConflictException(
+          'Não é possível excluir este usuário porque existem objetos ou devoluções vinculados a ele.',
+        );
+      }
+
+      throw erro;
+    }
 
     return { mensagem: 'Usuário removido com sucesso' };
   }
