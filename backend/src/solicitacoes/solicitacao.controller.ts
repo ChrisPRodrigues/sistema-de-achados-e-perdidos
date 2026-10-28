@@ -1,4 +1,5 @@
 
+
 import {
   Body,
   Controller,
@@ -10,6 +11,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+
 import { SolicitacaoService } from './solicitacao.service.js';
 import { CriarSolicitacaoDto } from './dto/criar-solicitacao.dto.js';
 import { AtualizarSolicitacaoDto } from './dto/atualizar-solicitacao.dto.js';
@@ -23,7 +25,7 @@ export class SolicitacaoController {
   ) {}
 
   private paraResposta(
-    solicitacao: Solicitacao
+    solicitacao: Solicitacao,
   ): SolicitacaoRespostaDto {
     return {
       id: solicitacao.id,
@@ -34,23 +36,28 @@ export class SolicitacaoController {
   }
 
   @Get()
-  listar(): SolicitacaoRespostaDto[] {
-    return this.solicitacaoService.listar().map((solicitacao) =>
-      this.paraResposta(solicitacao)
+  async listar(): Promise<SolicitacaoRespostaDto[]> {
+    const solicitacoes = await this.solicitacaoService.listar();
+
+    return solicitacoes.map((solicitacao) =>
+      this.paraResposta(solicitacao),
     );
   }
 
   @Post()
-  cadastrar(
-    @Body() solicitacao: CriarSolicitacaoDto): SolicitacaoRespostaDto {
-    return this.paraResposta(this.solicitacaoService.cadastrar(solicitacao));
+  async cadastrar(
+    @Body() dados: CriarSolicitacaoDto,
+  ): Promise<SolicitacaoRespostaDto> {
+    const solicitacao = await this.solicitacaoService.cadastrar(dados);
+
+    return this.paraResposta(solicitacao);
   }
 
   @Get(':id')
-  buscarPorId(
-    @Param('id', ParseIntPipe) id: number
-  ): SolicitacaoRespostaDto {
-    const solicitacao = this.solicitacaoService.buscarPorId(id);
+  async buscarPorId(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<SolicitacaoRespostaDto> {
+    const solicitacao = await this.solicitacaoService.buscarPorId(id);
 
     if (!solicitacao) {
       throw new NotFoundException('Solicitação não encontrada');
@@ -60,11 +67,11 @@ export class SolicitacaoController {
   }
 
   @Patch(':id')
-  atualizar(
+  async atualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() dados: AtualizarSolicitacaoDto,
-  ): SolicitacaoRespostaDto {
-    const solicitacao = this.solicitacaoService.atualizar(id, dados);
+  ): Promise<SolicitacaoRespostaDto> {
+    const solicitacao = await this.solicitacaoService.atualizar(id, dados);
 
     if (!solicitacao) {
       throw new NotFoundException('Solicitação não encontrada');
@@ -74,10 +81,9 @@ export class SolicitacaoController {
   }
 
   @Delete(':id')
-  remover(
-    @Param('id', ParseIntPipe) id: number
-  ): boolean {
-
+  async remover(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<boolean> {
     return this.solicitacaoService.remover(id);
   }
 }
