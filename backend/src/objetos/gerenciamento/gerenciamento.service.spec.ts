@@ -15,6 +15,7 @@ describe('GerenciamentoService', () => {
   const objetosRepository = {
     findOne: vi.fn(),
     save: vi.fn(),
+    delete: vi.fn(),
   };
 
   const categoriasRepository = {
@@ -25,9 +26,20 @@ describe('GerenciamentoService', () => {
     findOneBy: vi.fn(),
   };
 
-  // Simula o serviço responsável pelas devoluções
+  const devolucoesRepository = {
+    findOne: vi.fn(),
+  };
+
   const devolucoesService = {
     adicionar: vi.fn(),
+  };
+
+  const comprovanteService = {
+    listar: vi.fn(),
+  };
+
+  const historicoService = {
+    listar: vi.fn(),
   };
 
   const objeto = {
@@ -45,6 +57,9 @@ describe('GerenciamentoService', () => {
     vi.resetAllMocks();
 
     objetosRepository.findOne.mockResolvedValue({ ...objeto });
+    objetosRepository.delete.mockResolvedValue({ affected: 1 });
+
+    devolucoesRepository.findOne.mockResolvedValue(null);
 
     devolucoesService.adicionar.mockResolvedValue({
       id: 10,
@@ -52,13 +67,21 @@ describe('GerenciamentoService', () => {
       usuarioId: 2,
     });
 
+    comprovanteService.listar.mockReturnValue([]);
+    historicoService.listar.mockReturnValue([]);
+
     service = new GerenciamentoService(
       objetosRepository as any,
       categoriasRepository as any,
       locaisRepository as any,
+      devolucoesRepository as any,
       devolucoesService as any,
+      comprovanteService as any,
+      historicoService as any,
     );
   });
+
+  // TESTES DE DEVOLUÇÃO
 
   it('deve repassar erro quando o objeto não existir', async () => {
     devolucoesService.adicionar.mockRejectedValue(
@@ -130,5 +153,60 @@ describe('GerenciamentoService', () => {
       id: 1,
       status: 'devolvido',
     });
+  });
+
+  // TESTES DE EXCLUSÃO
+
+  it('deve excluir um objeto sem registros associados', async () => {
+    await service.remover(1);
+
+    expect(objetosRepository.delete).toHaveBeenCalledWith(1);
+  });
+
+  it('não deve excluir um objeto inexistente', async () => {
+    objetosRepository.findOne.mockResolvedValue(null);
+
+    await expect(
+      service.remover(99),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(objetosRepository.delete).not.toHaveBeenCalled();
+  });
+
+  it('não deve excluir um objeto que possui devolução', async () => {
+    devolucoesRepository.findOne.mockResolvedValue({
+      id: 10,
+      objeto: { id: 1 },
+    });
+
+    await expect(
+      service.remover(1),
+    ).rejects.toThrow(ConflictException);
+
+    expect(objetosRepository.delete).not.toHaveBeenCalled();
+  });
+
+  it('não deve excluir um objeto que possui comprovante', async () => {
+    comprovanteService.listar.mockReturnValue([
+      { id: 1, objetoId: 1 },
+    ]);
+
+    await expect(
+      service.remover(1),
+    ).rejects.toThrow(ConflictException);
+
+    expect(objetosRepository.delete).not.toHaveBeenCalled();
+  });
+
+  it('não deve excluir um objeto que possui histórico', async () => {
+    historicoService.listar.mockReturnValue([
+      { id: 1, objetoId: 1 },
+    ]);
+
+    await expect(
+      service.remover(1),
+    ).rejects.toThrow(ConflictException);
+
+    expect(objetosRepository.delete).not.toHaveBeenCalled();
   });
 });

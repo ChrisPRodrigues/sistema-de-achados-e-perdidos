@@ -16,6 +16,8 @@ import { CadastroService } from './cadastro/cadastro.service.js';
 import { GerenciamentoController } from './gerenciamento/gerenciamento.controller.js';
 import { GerenciamentoService } from './gerenciamento/gerenciamento.service.js';
 import { DevolucoesModule } from '../devolucoes/devolucoes.module.js';
+import { ComprovanteModule } from '../comprovantes/comprovante.module.js';
+import { HistoricoModule } from '../historicos/historico.module.js';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { DevolucoesModule } from '../devolucoes/devolucoes.module.js';
     ]),
     CategoriasModule,
     DevolucoesModule,
+    ComprovanteModule,
+    HistoricoModule,
   ],
   providers: [
     ObjetosRepositoryService,
