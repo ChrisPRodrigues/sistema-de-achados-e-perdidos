@@ -15,7 +15,6 @@ import { UsuarioEntity } from '../usuarios/entities/usuario.entity.js';
 describe('DevolucaoService', () => {
   let service: DevolucaoService;
 
-  // Simula a consulta com bloqueio do objeto
   const queryObjeto = {
     setLock: vi.fn(),
     where: vi.fn(),
@@ -34,7 +33,6 @@ describe('DevolucaoService', () => {
     findOne: vi.fn(),
   };
 
-  // Simula o EntityManager do TypeORM
   const manager = {
     getRepository: vi.fn(),
     create: vi.fn(),
@@ -98,13 +96,10 @@ describe('DevolucaoService', () => {
       dataDevolucao: new Date('2026-10-25T12:00:00Z'),
       observacao: null,
     });
-
     service = new DevolucaoService(
       devolucoes as any,
-      {} as any,
-      {} as any,
-    );
-  });
+  );
+});
 
   it('deve lançar erro quando o objeto não existir', async () => {
     queryObjeto.getOne.mockResolvedValue(null);

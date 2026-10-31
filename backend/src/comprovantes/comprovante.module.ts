@@ -9,5 +9,6 @@ import { ComprovanteService } from './comprovante.service.js';
     ComprovanteService,
     ComprovanteRepository,
   ],
+  exports: [ComprovanteService],
 })
 export class ComprovanteModule {}

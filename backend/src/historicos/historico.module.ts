@@ -9,5 +9,6 @@ import { HistoricoService } from './historico.service.js';
     HistoricoService,
     HistoricoRepository,
   ],
+  exports: [HistoricoService],
 })
 export class HistoricoModule {}

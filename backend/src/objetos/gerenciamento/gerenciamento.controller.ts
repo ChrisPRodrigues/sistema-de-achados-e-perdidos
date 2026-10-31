@@ -1,7 +1,9 @@
-
 import {
   Body,
   Controller,
+  Delete,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -28,6 +30,14 @@ export class GerenciamentoController {
     await this.gerenciamentoService.atualizar(id, dados);
 
     return paraObjetoResposta(objetoAtualizado);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remover(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<void> {
+    return this.gerenciamentoService.remover(id);
   }
 
   @Patch(':id/devolucao')

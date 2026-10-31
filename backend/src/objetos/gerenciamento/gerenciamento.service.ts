@@ -1,7 +1,8 @@
 
 import {
   Injectable,
-  NotFoundException
+  NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -9,7 +10,10 @@ import { Repository } from 'typeorm';
 import { ObjetoEntity } from '../entities/objeto.entity.js';
 import { CategoriaEntity } from '../../categorias/entities/categoria.entity.js';
 import { LocalEntity } from '../../locais/entities/local.entity.js';
+import { DevolucaoEntity } from '../../devolucoes/entities/devolucao.entity.js';
 import { DevolucaoService } from '../../devolucoes/devolucao.service.js';
+import { ComprovanteService } from '../../comprovantes/comprovante.service.js';
+import { HistoricoService } from '../../historicos/historico.service.js';
 
 type DadosAtualizacaoObjeto = {
   nome?: string;
@@ -31,7 +35,12 @@ export class GerenciamentoService {
     @InjectRepository(LocalEntity)
     private readonly locaisRepository: Repository<LocalEntity>,
 
+    @InjectRepository(DevolucaoEntity)
+    private readonly devolucoesRepository: Repository<DevolucaoEntity>,
+
     private readonly devolucoesService: DevolucaoService,
+    private readonly comprovanteService: ComprovanteService,
+    private readonly historicoService: HistoricoService,
   ) {}
 
   async atualizar(
@@ -96,6 +105,41 @@ async devolver(
   return this.buscarObjeto(id);
 }
 
+  async remover(id: number): Promise<void> {
+    await this.buscarObjeto(id);
+
+    const devolucao = await this.devolucoesRepository.findOne({
+      where: { objeto: { id } },
+    });
+
+    if (devolucao) {
+      throw new ConflictException(
+        'Não é possível excluir um objeto que possui a devolução registrada.',
+      );
+    }
+
+    const possuiComprovante = this.comprovanteService
+      .listar()
+      .some((comprovante) => comprovante.objetoId === id);
+
+    if (possuiComprovante) {
+      throw new ConflictException(
+        'Não é possível excluir um objeto que possui comprovantes associados.',
+      );
+    }
+
+    const possuiHistorico = this.historicoService
+      .listar()
+      .some((historico) => historico.objetoId === id);
+
+    if (possuiHistorico) {
+      throw new ConflictException(
+        'Não é possível excluir um objeto que possui históricos associados.',
+      );
+    }
+
+    await this.objetosRepository.delete(id);
+  }
   private async buscarObjeto(id: number): Promise<ObjetoEntity> {
     const objeto = await this.objetosRepository.findOne({
       where: { id },
