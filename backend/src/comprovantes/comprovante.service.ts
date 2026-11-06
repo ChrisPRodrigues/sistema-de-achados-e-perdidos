@@ -12,7 +12,7 @@ export class ComprovanteService {
     return this.comprovanteRepository.listar();
   }
 
-  buscarPorId(id: number): Comprovante {
+  buscarPorId(id: string): Comprovante {
     const comprovante = this.comprovanteRepository.buscarPorId(id);
 
     if (!comprovante) {
@@ -27,7 +27,7 @@ export class ComprovanteService {
   }
 
   atualizar(
-    id: number,
+    id: string,
     dados: Partial<Omit<Comprovante, 'id'>>,
   ): Comprovante {
     const comprovante = this.comprovanteRepository.atualizar(id, dados);
@@ -39,7 +39,7 @@ export class ComprovanteService {
     return comprovante;
   }
 
-  remover(id: number): void {
+  remover(id: string): void {
     const removido = this.comprovanteRepository.remover(id);
 
     if (!removido) {

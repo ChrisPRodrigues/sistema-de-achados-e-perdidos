@@ -4,9 +4,11 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
+
 import type { Historico } from './historico.interface.js';
 import { HistoricoService } from './historico.service.js';
 
@@ -22,8 +24,10 @@ export class HistoricoController {
   }
 
   @Get(':id')
-  buscarPorId(@Param('id') id: string): Historico {
-    return this.historicoService.buscarPorId(Number(id));
+  buscarPorId(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Historico {
+    return this.historicoService.buscarPorId(id);
   }
 
   @Post()
@@ -35,17 +39,16 @@ export class HistoricoController {
 
   @Patch(':id')
   atualizar(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dados: Partial<Omit<Historico, 'id'>>,
   ): Historico {
-    return this.historicoService.atualizar(
-      Number(id),
-      dados,
-    );
+    return this.historicoService.atualizar(id, dados);
   }
 
   @Delete(':id')
-  remover(@Param('id') id: string): void {
-    return this.historicoService.remover(Number(id));
+  remover(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): void {
+    return this.historicoService.remover(id);
   }
 }

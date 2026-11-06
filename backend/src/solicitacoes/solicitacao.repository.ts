@@ -1,17 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import type { Solicitacao } from './models/solicitacao/solicitacao.interface.js';
 
 @Injectable()
 export class SolicitacaoRepository {
   private solicitacoes: Solicitacao[] = [];
 
-  private proximoId = 1;
-
   listar(): Solicitacao[] {
     return this.solicitacoes;
   }
 
-  buscarPorId(id: number): Solicitacao | undefined {
+  buscarPorId(id: string): Solicitacao | undefined {
     return this.solicitacoes.find(
       (solicitacao) => solicitacao.id === id,
     );
@@ -19,7 +18,7 @@ export class SolicitacaoRepository {
 
   adicionar(solicitacao: Omit<Solicitacao, 'id'>): Solicitacao {
     const novaSolicitacao: Solicitacao = {
-      id: this.proximoId++,
+      id: randomUUID(),
       ...solicitacao,
     };
 
@@ -29,7 +28,7 @@ export class SolicitacaoRepository {
   }
 
   atualizar(
-    id: number,
+    id: string,
     dados: Partial<Solicitacao>,
   ): Solicitacao | undefined {
     const solicitacao = this.buscarPorId(id);
@@ -43,7 +42,7 @@ export class SolicitacaoRepository {
     return solicitacao;
   }
 
-  remover(id: number): boolean {
+  remover(id: string): boolean {
     const indice = this.solicitacoes.findIndex(
       (solicitacao) => solicitacao.id === id,
     );

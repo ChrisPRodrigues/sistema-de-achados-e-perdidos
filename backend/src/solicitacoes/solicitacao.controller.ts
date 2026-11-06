@@ -1,5 +1,3 @@
-
-
 import {
   Body,
   Controller,
@@ -7,7 +5,7 @@ import {
   Get,
   NotFoundException,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
@@ -55,7 +53,7 @@ export class SolicitacaoController {
 
   @Get(':id')
   async buscarPorId(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<SolicitacaoRespostaDto> {
     const solicitacao = await this.solicitacaoService.buscarPorId(id);
 
@@ -68,7 +66,7 @@ export class SolicitacaoController {
 
   @Patch(':id')
   async atualizar(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dados: AtualizarSolicitacaoDto,
   ): Promise<SolicitacaoRespostaDto> {
     const solicitacao = await this.solicitacaoService.atualizar(id, dados);
@@ -82,7 +80,7 @@ export class SolicitacaoController {
 
   @Delete(':id')
   async remover(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<boolean> {
     return this.solicitacaoService.remover(id);
   }

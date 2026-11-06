@@ -7,7 +7,7 @@ import { CriarComprovanteDto } from './criar-comprovante.dto.js';
 describe('CriarComprovanteDto', () => {
   it('deve aceitar um comprovante válido', async () => {
     const dto = plainToInstance(CriarComprovanteDto, {
-      objetoId: 1,
+      objetoId: '550e8400-e29b-41d4-a716-446655440000',
       descricao: 'Objeto entregue ao proprietário',
       dataRegistro: '2026-10-27T13:00:00.000Z',
     });
@@ -20,7 +20,7 @@ describe('CriarComprovanteDto', () => {
 
   it('deve rejeitar dados inválidos', async () => {
     const dto = plainToInstance(CriarComprovanteDto, {
-      objetoId: -1,
+      objetoId: 'id-invalido',
       descricao: '',
       dataRegistro: 'data-invalida',
     });
@@ -38,7 +38,7 @@ describe('CriarComprovanteDto', () => {
 
   it('deve rejeitar campos desconhecidos', async () => {
     const dto = plainToInstance(CriarComprovanteDto, {
-      objetoId: 1,
+      objetoId: '550e8400-e29b-41d4-a716-446655440000',
       descricao: 'Comprovante válido',
       dataRegistro: '2026-10-27T13:00:00.000Z',
       id: 99,

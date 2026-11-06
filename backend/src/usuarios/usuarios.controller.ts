@@ -1,11 +1,10 @@
-
 import {
   Body,
   Controller,
   Delete,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
@@ -51,7 +50,7 @@ export class UsuariosController {
 
   @Get(':id')
   async buscarPorId(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<UsuarioRespostaDto> {
     const usuario = await this.usuariosService.buscarPorId(id);
 
@@ -60,7 +59,7 @@ export class UsuariosController {
 
   @Patch(':id')
   async atualizar(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dados: AtualizarUsuarioDto,
   ): Promise<UsuarioRespostaDto> {
     const usuarioAtualizado = await this.usuariosService.atualizar(id, dados);
@@ -70,7 +69,7 @@ export class UsuariosController {
 
   @Delete(':id')
   async remover(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<{ mensagem: string }> {
     const resultado = await this.usuariosService.remover(id);
 

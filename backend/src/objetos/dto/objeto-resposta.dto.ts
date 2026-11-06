@@ -1,11 +1,10 @@
-
 export class ObjetoRespostaDto {
-  id: number;
+  id: string;
   nome: string;
   descricao: string;
-  categoriaId: number;
-  localId: number;
-  usuarioId: number;
+  categoriaId: string;
+  localId: string;
+  usuarioId: string;
   dataEncontrado: Date;
   status: 'encontrado' | 'devolvido';
 }

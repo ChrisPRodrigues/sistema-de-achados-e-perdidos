@@ -1,6 +1,6 @@
 export interface Comprovante {
-  id: number;
-  objetoId: number;
+  id: string;
+  objetoId: string;
   descricao: string;
   dataRegistro: Date;
 }

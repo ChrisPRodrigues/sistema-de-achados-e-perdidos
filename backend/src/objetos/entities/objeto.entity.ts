@@ -3,17 +3,21 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { CategoriaEntity } from '../../categorias/entities/categoria.entity.js';
 import { LocalEntity } from '../../locais/entities/local.entity.js';
 import { UsuarioEntity } from '../../usuarios/entities/usuario.entity.js';
+import { SolicitacaoEntity } from '../../solicitacoes/entities/solicitacao.entity.js';
+import { DevolucaoEntity } from '../../devolucoes/entities/devolucao.entity.js';
 
 @Entity('objetos')
 export class ObjetoEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ type: 'varchar', length: 150 })
   nome: string;
@@ -21,37 +25,40 @@ export class ObjetoEntity {
   @Column({ type: 'text' })
   descricao: string;
 
-  // Impede excluir uma categoria que ainda possui objetos associados.
-  @ManyToOne(() => CategoriaEntity, {
+  @ManyToOne(() => CategoriaEntity, (categoria) => categoria.objetos, {
     nullable: false,
-    onDelete: 'NO ACTION',
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'categoria_id' })
   categoria: CategoriaEntity;
 
-  // Impede excluir um local que ainda possui objetos associados.
-  @ManyToOne(() => LocalEntity, {
+  @ManyToOne(() => LocalEntity, (local) => local.objetos, {
     nullable: false,
-    onDelete: 'NO ACTION',
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'local_id' })
   localEncontrado: LocalEntity;
 
-  // Impede excluir um usuário que ainda possui objetos associados.
-  @ManyToOne(() => UsuarioEntity, {
+  @ManyToOne(() => UsuarioEntity, (usuario) => usuario.objetos, {
     nullable: false,
-    onDelete: 'NO ACTION',
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'usuario_id' })
   usuario: UsuarioEntity;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamptz' })
   dataEncontrado: Date;
 
   @Column({
-    type: 'varchar',
-    length: 20,
+    type: 'enum',
+    enum: ['encontrado', 'devolvido'],
     default: 'encontrado',
   })
   status: 'encontrado' | 'devolvido';
+
+  @OneToMany(() => SolicitacaoEntity, (solicitacao) => solicitacao.objeto)
+  solicitacoes: SolicitacaoEntity[];
+
+  @OneToOne(() => DevolucaoEntity, (devolucao) => devolucao.objeto)
+  devolucao: DevolucaoEntity;
 }

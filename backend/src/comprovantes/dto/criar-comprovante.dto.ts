@@ -1,20 +1,19 @@
+import { Type } from 'class-transformer';
 import {
   IsDate,
-  IsInt,
   IsNotEmpty,
   IsString,
-  Min,
+  IsUUID,
+  Matches,
 } from 'class-validator';
 
-import { Type } from 'class-transformer';
-
 export class CriarComprovanteDto {
-  @IsInt()
-  @Min(1)
-  objetoId: number;
+  @IsUUID()
+  objetoId: string;
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/\S/)
   descricao: string;
 
   @Type(() => Date)
