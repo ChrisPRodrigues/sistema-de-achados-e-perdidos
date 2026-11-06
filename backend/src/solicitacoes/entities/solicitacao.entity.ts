@@ -1,16 +1,19 @@
 
+
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 
 import { UsuarioEntity } from '../../usuarios/entities/usuario.entity.js';
 import { ObjetoEntity } from '../../objetos/entities/objeto.entity.js';
 
 @Entity('solicitacoes')
+@Unique('UQ_solicitacoes_usuario_objeto', ['usuario', 'objeto'])
 export class SolicitacaoEntity {
   @PrimaryGeneratedColumn()
   id: number;
