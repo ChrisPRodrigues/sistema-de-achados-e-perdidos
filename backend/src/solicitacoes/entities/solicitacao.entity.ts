@@ -1,5 +1,3 @@
-
-
 import {
   Column,
   Entity,
@@ -15,26 +13,26 @@ import { ObjetoEntity } from '../../objetos/entities/objeto.entity.js';
 @Entity('solicitacoes')
 @Unique('UQ_solicitacoes_usuario_objeto', ['usuario', 'objeto'])
 export class SolicitacaoEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @ManyToOne(() => UsuarioEntity, {
+  @ManyToOne(() => UsuarioEntity, (usuario) => usuario.solicitacoes, {
     nullable: false,
-    onDelete: 'NO ACTION',
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'usuario_id' })
   usuario: UsuarioEntity;
 
-  @ManyToOne(() => ObjetoEntity, {
+  @ManyToOne(() => ObjetoEntity, (objeto) => objeto.solicitacoes, {
     nullable: false,
-    onDelete: 'NO ACTION',
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'objeto_id' })
   objeto: ObjetoEntity;
 
   @Column({
-    type: 'varchar',
-    length: 20,
+    type: 'enum',
+    enum: ['pendente', 'aprovada', 'recusada'],
     default: 'pendente',
   })
   status: 'pendente' | 'aprovada' | 'recusada';

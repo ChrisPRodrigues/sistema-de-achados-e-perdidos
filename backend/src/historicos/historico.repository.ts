@@ -1,17 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import type { Historico } from './historico.interface.js';
 
 @Injectable()
 export class HistoricoRepository {
   private historicos: Historico[] = [];
 
-  private proximoId = 1;
-
   listar(): Historico[] {
     return this.historicos;
   }
 
-  buscarPorId(id: number): Historico | undefined {
+  buscarPorId(id: string): Historico | undefined {
     return this.historicos.find(
       (historico) => historico.id === id,
     );
@@ -19,7 +18,7 @@ export class HistoricoRepository {
 
   adicionar(historico: Omit<Historico, 'id'>): Historico {
     const novoHistorico: Historico = {
-      id: this.proximoId++,
+      id: randomUUID(),
       ...historico,
     };
 
@@ -29,7 +28,7 @@ export class HistoricoRepository {
   }
 
   atualizar(
-    id: number,
+    id: string,
     dados: Partial<Omit<Historico, 'id'>>,
   ): Historico | undefined {
     const historico = this.buscarPorId(id);
@@ -43,7 +42,7 @@ export class HistoricoRepository {
     return historico;
   }
 
-  remover(id: number): boolean {
+  remover(id: string): boolean {
     const indice = this.historicos.findIndex(
       (historico) => historico.id === id,
     );

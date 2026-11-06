@@ -8,8 +8,8 @@ import { CriarSolicitacaoDto } from './criar-solicitacao.dto.js';
 describe('CriarSolicitacaoDto', () => {
   it('deve aceitar uma solicitação válida', async () => {
     const dto = plainToInstance(CriarSolicitacaoDto, {
-      usuarioId: 1,
-      objetoId: 5,
+      usuarioId: '550e8400-e29b-41d4-a716-446655440000',
+      objetoId: '550e8400-e29b-41d4-a716-446655440001',
       status: 'pendente',
     });
 
@@ -20,7 +20,7 @@ describe('CriarSolicitacaoDto', () => {
 
   it('deve rejeitar dados inválidos', async () => {
     const dto = plainToInstance(CriarSolicitacaoDto, {
-      usuarioId: -1,
+      usuarioId: 'id-invalido',
       objetoId: 'abc',
       status: 'finalizada',
     });
@@ -38,8 +38,8 @@ describe('CriarSolicitacaoDto', () => {
 
   it('deve rejeitar campos desconhecidos', async () => {
     const dto = plainToInstance(CriarSolicitacaoDto, {
-      usuarioId: 1,
-      objetoId: 5,
+      usuarioId: '550e8400-e29b-41d4-a716-446655440000',
+      objetoId: '550e8400-e29b-41d4-a716-446655440001',
       status: 'pendente',
       id: 99,
     });

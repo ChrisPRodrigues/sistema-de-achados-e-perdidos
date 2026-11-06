@@ -1,6 +1,6 @@
 export interface Solicitacao {
-  id: number;
-  usuarioId: number;
-  objetoId: number;
+  id: string;
+  usuarioId: string;
+  objetoId: string;
   status: 'pendente' | 'aprovada' | 'recusada';
 }

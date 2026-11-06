@@ -12,7 +12,7 @@ export class HistoricoService {
     return this.historicoRepository.listar();
   }
 
-  buscarPorId(id: number): Historico {
+  buscarPorId(id: string): Historico {
     const historico = this.historicoRepository.buscarPorId(id);
 
     if (!historico) {
@@ -27,7 +27,7 @@ export class HistoricoService {
   }
 
   atualizar(
-    id: number,
+    id: string,
     dados: Partial<Omit<Historico, 'id'>>,
   ): Historico {
     const historico = this.historicoRepository.atualizar(id, dados);
@@ -39,7 +39,7 @@ export class HistoricoService {
     return historico;
   }
 
-  remover(id: number): void {
+  remover(id: string): void {
     const removido = this.historicoRepository.remover(id);
 
     if (!removido) {

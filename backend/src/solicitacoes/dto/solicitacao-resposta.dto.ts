@@ -1,6 +1,6 @@
 export class SolicitacaoRespostaDto {
-    id: number;
-    usuarioId: number;
-    objetoId: number;
-    status: 'pendente' | 'aprovada' | 'recusada';
+  id: string;
+  usuarioId: string;
+  objetoId: string;
+  status: 'pendente' | 'aprovada' | 'recusada';
 }

@@ -1,7 +1,13 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
 
 import { CadastroService } from './cadastro.service.js';
-import { ObjetoEntity } from '../entities/objeto.entity.js';
 import { CriarObjetoDto } from '../dto/criar-objeto.dto.js';
 import { ObjetoRespostaDto } from '../dto/objeto-resposta.dto.js';
 import { paraObjetoResposta } from '../dto/objeto-resposta.mapper.js';
@@ -23,7 +29,7 @@ export class CadastroController {
 
   @Get(':id')
   async buscarPorId(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<ObjetoRespostaDto> {
     const objeto = await this.cadastroService.buscarPorId(id);
 

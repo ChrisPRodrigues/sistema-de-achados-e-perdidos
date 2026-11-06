@@ -1,28 +1,26 @@
+import { Type } from 'class-transformer';
 import {
-    IsNumber,
-    IsInt,
-    IsNotEmpty,
-    IsOptional,
-    IsString,
-    Min,
-    IsDate,
+  IsDate,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Matches,
 } from 'class-validator';
 
-import { Type } from 'class-transformer';
-
 export class AtualizarComprovanteDto {
-    @IsOptional()
-    @IsInt()
-    @Min(1)
-    objetoId?: number;
+  @IsOptional()
+  @IsUUID()
+  objetoId?: string;
 
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    descricao?: string;
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/\S/)
+  descricao?: string;
 
-    @IsOptional()
-    @Type(() => Date)
-    @IsDate()
-    dataRegistro?: Date;
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  dataRegistro?: Date;
 }

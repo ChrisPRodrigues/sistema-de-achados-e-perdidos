@@ -1,6 +1,6 @@
 export class ComprovanteRespostaDto {
-    id: number;
-    objetoId: number;
-    descricao: string;
-    dataRegistro: Date;
+  id: string;
+  objetoId: string;
+  descricao: string;
+  dataRegistro: Date;
 }

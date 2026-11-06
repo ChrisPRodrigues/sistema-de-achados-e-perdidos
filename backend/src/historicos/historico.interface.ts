@@ -1,6 +1,6 @@
 export interface Historico {
-  id: number;
-  objetoId: number;
+  id: string;
+  objetoId: string;
   acao: string;
   data: Date;
   observacao?: string;

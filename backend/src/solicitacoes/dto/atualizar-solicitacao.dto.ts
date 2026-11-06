@@ -1,15 +1,13 @@
-import { IsIn, IsInt, IsOptional, Min } from 'class-validator';
+import { IsIn, IsOptional, IsUUID } from 'class-validator';
 
 export class AtualizarSolicitacaoDto {
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  usuarioId?: number;
+  @IsUUID()
+  usuarioId?: string;
 
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  objetoId?: number;
+  @IsUUID()
+  objetoId?: string;
 
   @IsOptional()
   @IsIn(['pendente', 'aprovada', 'recusada'])

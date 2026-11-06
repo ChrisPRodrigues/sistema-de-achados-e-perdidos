@@ -22,7 +22,7 @@ export class LocaisService {
     return this.locaisRepository.find();
   }
 
-  async buscarPorId(id: number): Promise<LocalEntity> {
+  async buscarPorId(id: string): Promise<LocalEntity> {
     const local = await this.locaisRepository.findOne({
       where: { id },
     });
@@ -54,7 +54,7 @@ export class LocaisService {
   }
 
   async atualizar(
-    id: number,
+    id: string,
     dados: AtualizarLocalDto,
   ): Promise<LocalEntity> {
     const local = await this.buscarPorId(id);
@@ -80,7 +80,7 @@ export class LocaisService {
     return this.locaisRepository.save(local);
   }
 
-  async remover(id: number): Promise<void> {
+  async remover(id: string): Promise<void> {
     await this.buscarPorId(id);
 
     try {

@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NotFoundException,
@@ -41,7 +40,7 @@ export class UsuariosService {
     return this.usuariosRepository.save(novoUsuario);
   }
 
-  async buscarPorId(id: number): Promise<UsuarioEntity> {
+  async buscarPorId(id: string): Promise<UsuarioEntity> {
     const usuario = await this.usuariosRepository.findOneBy({ id });
 
     if (!usuario) {
@@ -52,7 +51,7 @@ export class UsuariosService {
   }
 
   async atualizar(
-    id: number,
+    id: string,
     dados: Partial<DadosUsuario>,
   ): Promise<UsuarioEntity> {
     const usuario = await this.buscarPorId(id);
@@ -71,7 +70,7 @@ export class UsuariosService {
     return this.usuariosRepository.save(usuario);
   }
 
-  async remover(id: number): Promise<{ mensagem: string }> {
+  async remover(id: string): Promise<{ mensagem: string }> {
     const usuario = await this.buscarPorId(id);
 
     try {
