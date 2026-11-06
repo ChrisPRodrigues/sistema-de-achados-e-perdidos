@@ -1,3 +1,4 @@
+
 import 'reflect-metadata';
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
@@ -7,6 +8,7 @@ import { CategoriaEntity } from './categorias/entities/categoria.entity.js';
 import { LocalEntity } from './locais/entities/local.entity.js';
 import { ObjetoEntity } from './objetos/entities/objeto.entity.js';
 import { DevolucaoEntity } from './devolucoes/entities/devolucao.entity.js';
+import { SolicitacaoEntity } from './solicitacoes/entities/solicitacao.entity.js';
 
 export default new DataSource({
   type: 'postgres',
@@ -27,6 +29,7 @@ export default new DataSource({
     LocalEntity,
     ObjetoEntity,
     DevolucaoEntity,
+    SolicitacaoEntity,
   ],
 
   migrations: ['src/migrations/*.ts'],

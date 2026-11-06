@@ -1,8 +1,11 @@
 
-
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 
 import { SolicitacaoEntity } from './entities/solicitacao.entity.js';
 import { UsuarioEntity } from '../usuarios/entities/usuario.entity.js';
@@ -53,6 +56,40 @@ export class SolicitacaoService {
     return objeto;
   }
 
+  private async verificarDuplicidade(
+    usuarioId: number,
+    objetoId: number,
+    ignorarId?: number,
+  ): Promise<void> {
+    const existente = await this.solicitacoesRepository.findOne({
+      where: {
+        usuario: { id: usuarioId },
+        objeto: { id: objetoId },
+      },
+    });
+
+    if (existente && existente.id !== ignorarId) {
+      throw new ConflictException(
+        'Este usuário já possui uma solicitação para este objeto',
+      );
+    }
+  }
+
+  private tratarErroDuplicidade(erro: unknown): never {
+    if (
+      erro instanceof QueryFailedError &&
+      (erro.driverError as { code?: string }).code === '23505' &&
+      (erro.driverError as { constraint?: string }).constraint ===
+        'UQ_solicitacoes_usuario_objeto'
+    ) {
+      throw new ConflictException(
+        'Este usuário já possui uma solicitação para este objeto',
+      );
+    }
+
+    throw erro;
+  }
+
   async listar(): Promise<Solicitacao[]> {
     const solicitacoes = await this.solicitacoesRepository.find({
       relations: {
@@ -70,15 +107,20 @@ export class SolicitacaoService {
     const usuario = await this.buscarUsuario(dados.usuarioId);
     const objeto = await this.buscarObjeto(dados.objetoId);
 
+    await this.verificarDuplicidade(dados.usuarioId, dados.objetoId);
+
     const solicitacao = this.solicitacoesRepository.create({
       usuario,
       objeto,
       status: dados.status,
     });
 
-    const salva = await this.solicitacoesRepository.save(solicitacao);
-
-    return this.paraSolicitacao(salva);
+    try {
+      const salva = await this.solicitacoesRepository.save(solicitacao);
+      return this.paraSolicitacao(salva);
+    } catch (erro) {
+      this.tratarErroDuplicidade(erro);
+    }
   }
 
   async buscarPorId(id: number): Promise<Solicitacao | undefined> {
@@ -111,6 +153,9 @@ export class SolicitacaoService {
       return undefined;
     }
 
+    const usuarioId = dados.usuarioId ?? solicitacao.usuario.id;
+    const objetoId = dados.objetoId ?? solicitacao.objeto.id;
+
     if (dados.usuarioId !== undefined) {
       solicitacao.usuario = await this.buscarUsuario(dados.usuarioId);
     }
@@ -119,13 +164,18 @@ export class SolicitacaoService {
       solicitacao.objeto = await this.buscarObjeto(dados.objetoId);
     }
 
+    await this.verificarDuplicidade(usuarioId, objetoId, id);
+
     if (dados.status !== undefined) {
       solicitacao.status = dados.status;
     }
 
-    const atualizada = await this.solicitacoesRepository.save(solicitacao);
-
-    return this.paraSolicitacao(atualizada);
+    try {
+      const atualizada = await this.solicitacoesRepository.save(solicitacao);
+      return this.paraSolicitacao(atualizada);
+    } catch (erro) {
+      this.tratarErroDuplicidade(erro);
+    }
   }
 
   async remover(id: number): Promise<boolean> {
