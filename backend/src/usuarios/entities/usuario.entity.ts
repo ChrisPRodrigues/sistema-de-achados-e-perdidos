@@ -1,9 +1,11 @@
+
 import {
   Column,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import type { Relation } from 'typeorm';
 
 import { ObjetoEntity } from '../../objetos/entities/objeto.entity.js';
 import { SolicitacaoEntity } from '../../solicitacoes/entities/solicitacao.entity.js';
@@ -27,11 +29,11 @@ export class UsuarioEntity {
   tipo: 'aluno' | 'docente';
 
   @OneToMany(() => ObjetoEntity, (objeto) => objeto.usuario)
-  objetos: ObjetoEntity[];
+  objetos: Relation<ObjetoEntity[]>;
 
   @OneToMany(() => SolicitacaoEntity, (solicitacao) => solicitacao.usuario)
-  solicitacoes: SolicitacaoEntity[];
+  solicitacoes: Relation<SolicitacaoEntity[]>;
 
   @OneToMany(() => DevolucaoEntity, (devolucao) => devolucao.usuario)
-  devolucoes: DevolucaoEntity[];
+  devolucoes: Relation<DevolucaoEntity[]>;
 }

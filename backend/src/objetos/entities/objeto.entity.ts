@@ -1,3 +1,4 @@
+
 import {
   Column,
   Entity,
@@ -7,6 +8,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import type { Relation } from 'typeorm';
 
 import { CategoriaEntity } from '../../categorias/entities/categoria.entity.js';
 import { LocalEntity } from '../../locais/entities/local.entity.js';
@@ -30,21 +32,21 @@ export class ObjetoEntity {
     onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'categoria_id' })
-  categoria: CategoriaEntity;
+  categoria: Relation<CategoriaEntity>;
 
   @ManyToOne(() => LocalEntity, (local) => local.objetos, {
     nullable: false,
     onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'local_id' })
-  localEncontrado: LocalEntity;
+  localEncontrado: Relation<LocalEntity>;
 
   @ManyToOne(() => UsuarioEntity, (usuario) => usuario.objetos, {
     nullable: false,
     onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'usuario_id' })
-  usuario: UsuarioEntity;
+  usuario: Relation<UsuarioEntity>;
 
   @Column({ type: 'timestamptz' })
   dataEncontrado: Date;
@@ -57,8 +59,8 @@ export class ObjetoEntity {
   status: 'encontrado' | 'devolvido';
 
   @OneToMany(() => SolicitacaoEntity, (solicitacao) => solicitacao.objeto)
-  solicitacoes: SolicitacaoEntity[];
+  solicitacoes: Relation<SolicitacaoEntity[]>;
 
   @OneToOne(() => DevolucaoEntity, (devolucao) => devolucao.objeto)
-  devolucao: DevolucaoEntity;
+  devolucao: Relation<DevolucaoEntity>;
 }

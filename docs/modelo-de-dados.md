@@ -101,3 +101,59 @@ A restrição composta de Solicitação foi definida com:
 `@Unique('UQ_solicitacoes_usuario_objeto', ['usuario', 'objeto'])`
 
 Além disso, as colunas foram revisadas: identificadores UUID, campos obrigatórios e opcionais com nulabilidade definida, tipos `enum` para situações e `timestamptz` para datas e horários. Não há campo monetário que necessite de `decimal`.
+
+## 5. Verificação
+
+### 5.1. Migrações
+
+As migrações foram executadas no banco de testes `achados_perdidos_teste` com:
+
+```powershell
+npm run migration:run
+```
+
+A execução foi concluída com sucesso. Também foi testado o comando:
+
+```powershell
+npm run migration:revert
+```
+
+A última migração foi revertida com sucesso e reaplicada posteriormente.
+
+### 5.2. Listagem de objetos e relacionamentos
+
+Foi realizada a requisição:
+
+```powershell
+curl.exe -i "http://localhost:3000/objetos"
+```
+
+Resultado: `HTTP 200 OK`.
+
+A resposta apresentou 2 objetos, com paginação (`pagina: 1`, `limite: 10`).
+
+O log SQL demonstrou o uso de `INNER JOIN` com as tabelas `categorias`, `locais` e `usuarios`. A listagem utilizou 2 consultas SQL: uma para selecionar os IDs paginados e outra para carregar os objetos e seus relacionamentos.
+
+Assim, os relacionamentos são carregados em conjunto, sem consultas individuais para cada objeto, evitando o problema N+1.
+
+### 5.3. Teste de restrição de duplicidade
+
+Foi realizada uma tentativa de cadastrar novamente uma solicitação para o mesmo usuário e objeto:
+
+```powershell
+curl.exe -i -X POST http://localhost:3000/solicitacoes -H "Content-Type: application/json" -d '{"usuarioId":"651b20ef-5928-41dc-9474-fcca74d0d78b","objetoId":"ad4e0b40-61be-4f64-8cf5-a71e32e985fa","status":"pendente"}'
+```
+
+Resultado: `HTTP 409 Conflict`.
+
+Resposta da API:
+
+```json
+{
+  "message": "Este usuário já possui uma solicitação para este objeto",
+  "error": "Conflict",
+  "statusCode": 409
+}
+```
+
+A API impediu o cadastro duplicado e tratou a violação da regra de negócio sem retornar erro interno `500`.

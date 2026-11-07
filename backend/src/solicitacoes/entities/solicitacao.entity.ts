@@ -1,3 +1,4 @@
+
 import {
   Column,
   Entity,
@@ -6,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import type { Relation } from 'typeorm';
 
 import { UsuarioEntity } from '../../usuarios/entities/usuario.entity.js';
 import { ObjetoEntity } from '../../objetos/entities/objeto.entity.js';
@@ -21,14 +23,14 @@ export class SolicitacaoEntity {
     onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'usuario_id' })
-  usuario: UsuarioEntity;
+  usuario: Relation<UsuarioEntity>;
 
   @ManyToOne(() => ObjetoEntity, (objeto) => objeto.solicitacoes, {
     nullable: false,
     onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'objeto_id' })
-  objeto: ObjetoEntity;
+  objeto: Relation<ObjetoEntity>;
 
   @Column({
     type: 'enum',
