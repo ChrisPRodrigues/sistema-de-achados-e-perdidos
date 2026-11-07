@@ -1,3 +1,4 @@
+
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -32,6 +33,7 @@ import { HistoricoModule } from './historicos/historico.module.js';
             : false,
         autoLoadEntities: true,
         synchronize: false,
+        logging: ['query'],
       }),
     }),
     ObjetosModule,
