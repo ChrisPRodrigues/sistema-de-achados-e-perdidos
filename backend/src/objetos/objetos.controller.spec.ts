@@ -1,3 +1,4 @@
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -42,9 +43,22 @@ describe('ObjetosController', () => {
       id: 'uuid-objeto',
       nome: 'Mochila',
       descricao: 'Mochila encontrada na biblioteca',
-      categoria: { id: 'uuid-categoria' },
-      localEncontrado: { id: 'uuid-local' },
-      usuario: { id: 'uuid-usuario' },
+      categoria: {
+        id: 'uuid-categoria',
+        nome: 'Acessórios',
+        descricao: 'Objetos pessoais',
+      },
+      localEncontrado: {
+        id: 'uuid-local',
+        nome: 'Biblioteca',
+        descricao: 'Biblioteca central',
+      },
+      usuario: {
+        id: 'uuid-usuario',
+        nome: 'Maria',
+        email: 'maria@example.com',
+        tipo: 'aluno',
+      },
       dataEncontrado,
       status: 'encontrado',
     };
@@ -79,6 +93,9 @@ describe('ObjetosController', () => {
           categoriaId: 'uuid-categoria',
           localId: 'uuid-local',
           usuarioId: 'uuid-usuario',
+          categoria: objeto.categoria,
+          local: objeto.localEncontrado,
+          usuario: objeto.usuario,
           dataEncontrado,
           status: 'encontrado',
         },
