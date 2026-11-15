@@ -1,3 +1,4 @@
+
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -13,10 +14,12 @@ import { LocaisModule } from './locais/locais.module.js';
 import { SolicitacoesModule } from './solicitacoes/solicitacoes.module.js';
 import { ComprovanteModule } from './comprovantes/comprovante.module.js';
 import { HistoricoModule } from './historicos/historico.module.js';
+import { ConsultasModule } from './consultas/consultas.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -32,8 +35,10 @@ import { HistoricoModule } from './historicos/historico.module.js';
             : false,
         autoLoadEntities: true,
         synchronize: false,
+        logging: true,
       }),
     }),
+
     ObjetosModule,
     UsuariosModule,
     DevolucoesModule,
@@ -42,6 +47,7 @@ import { HistoricoModule } from './historicos/historico.module.js';
     SolicitacoesModule,
     ComprovanteModule,
     HistoricoModule,
+    ConsultasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
