@@ -1,13 +1,11 @@
-
 import { Type } from 'class-transformer';
 import {
   IsDate,
-  IsInt,
   IsNotEmpty,
   IsString,
+  IsUUID,
   Matches,
   MaxLength,
-  Min,
 } from 'class-validator';
 
 export class CriarObjetoDto {
@@ -22,17 +20,14 @@ export class CriarObjetoDto {
   @Matches(/\S/)
   descricao: string;
 
-  @IsInt()
-  @Min(1)
-  categoriaId: number;
+  @IsUUID()
+  categoriaId: string;
 
-  @IsInt()
-  @Min(1)
-  localId: number;
+  @IsUUID()
+  localId: string;
 
-  @IsInt()
-  @Min(1)
-  usuarioId: number;
+  @IsUUID()
+  usuarioId: string;
 
   @Type(() => Date)
   @IsDate()

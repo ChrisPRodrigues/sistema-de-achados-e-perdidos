@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NotFoundException,
@@ -15,9 +14,9 @@ import { UsuarioEntity } from '../../usuarios/entities/usuario.entity.js';
 type DadosCadastroObjeto = {
   nome: string;
   descricao: string;
-  categoriaId: number;
-  localId: number;
-  usuarioId: number;
+  categoriaId: string;
+  localId: string;
+  usuarioId: string;
   dataEncontrado: Date;
 };
 
@@ -83,7 +82,7 @@ export class CadastroService {
     return this.objetosRepository.save(objeto);
   }
 
-  async buscarPorId(id: number): Promise<ObjetoEntity> {
+  async buscarPorId(id: string): Promise<ObjetoEntity> {
     const objeto = await this.objetosRepository.findOne({
       where: { id },
       relations: {

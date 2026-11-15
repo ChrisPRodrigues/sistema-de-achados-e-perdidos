@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 
 import { ObjetoEntity } from './entities/objeto.entity.js';
 import { ObjetoRespostaDto } from './dto/objeto-resposta.dto.js';
+import { ListarObjetosQueryDto } from './dto/listar-objetos-query.dto.js';
 import { paraObjetoResposta } from './dto/objeto-resposta.mapper.js';
 
 @Controller('objetos')
@@ -14,24 +15,46 @@ export class ObjetosController {
     private readonly objetosRepository: Repository<ObjetoEntity>,
   ) {}
 
-  // Listagem original utilizada pelo frontend
+  // Paginação original da equipe
   @Get()
-  async listar(): Promise<ObjetoRespostaDto[]> {
-    const objetos = await this.objetosRepository.find({
-      relations: {
-        categoria: true,
-        localEncontrado: true,
-        usuario: true,
-      },
-      order: {
-        id: 'ASC',
-      },
-    });
+  async listar(
+    @Query() query: ListarObjetosQueryDto,
+  ): Promise<{
+    objetos: ObjetoRespostaDto[];
+    total: number;
+    pagina: number;
+    limite: number;
+    totalPaginas: number;
+  }> {
+    const { page, limit } = query;
 
-    return objetos.map((objeto) => paraObjetoResposta(objeto));
+    const [objetos, total] =
+      await this.objetosRepository.findAndCount({
+        relations: {
+          categoria: true,
+          localEncontrado: true,
+          usuario: true,
+        },
+        relationLoadStrategy: 'join',
+        skip: (page - 1) * limit,
+        take: limit,
+        order: {
+          id: 'ASC',
+        },
+      });
+
+    return {
+      objetos: objetos.map((objeto) =>
+        paraObjetoResposta(objeto),
+      ),
+      total,
+      pagina: page,
+      limite: limit,
+      totalPaginas: Math.ceil(total / limit),
+    };
   }
 
-  // Listagem paginada para a atividade E2
+  // Paginação específica da E2
   @Get('paginados')
   async listarPaginados(
     @Query('pagina') paginaParam?: string,
@@ -63,6 +86,7 @@ export class ObjetosController {
           localEncontrado: true,
           usuario: true,
         },
+        relationLoadStrategy: 'join',
         order: {
           id: 'ASC',
         },
@@ -71,7 +95,9 @@ export class ObjetosController {
       });
 
     return {
-      dados: objetos.map((objeto) => paraObjetoResposta(objeto)),
+      dados: objetos.map((objeto) =>
+        paraObjetoResposta(objeto),
+      ),
       total,
       pagina,
       limite,

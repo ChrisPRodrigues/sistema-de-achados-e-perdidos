@@ -1,7 +1,7 @@
 export class DevolucaoRespostaDto {
-  id: number;
-  objetoId: number;
-  usuarioId: number;
+  id: string;
+  objetoId: string;
+  usuarioId: string;
   dataDevolucao: Date;
-  observacao?: string;
+  observacao?: string | null;
 }

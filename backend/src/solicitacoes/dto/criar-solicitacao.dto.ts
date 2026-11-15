@@ -1,13 +1,11 @@
-import { IsIn, IsInt, Min } from 'class-validator';
+import { IsIn, IsUUID } from 'class-validator';
 
 export class CriarSolicitacaoDto {
-  @IsInt()
-  @Min(1)
-  usuarioId: number;
+  @IsUUID()
+  usuarioId: string;
 
-  @IsInt()
-  @Min(1)
-  objetoId: number;
+  @IsUUID()
+  objetoId: string;
 
   @IsIn(['pendente', 'aprovada', 'recusada'])
   status: 'pendente' | 'aprovada' | 'recusada';

@@ -1,11 +1,10 @@
-
 import {
   Body,
   Controller,
   Delete,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
@@ -20,10 +19,10 @@ import { DevolucaoRespostaDto } from './dto/devolucao-resposta.dto.js';
 export class DevolucaoController {
   constructor(
     private readonly devolucaoService: DevolucaoService,
-  ) { }
+  ) {}
 
   private paraResposta(
-    devolucao: Devolucao
+    devolucao: Devolucao,
   ): DevolucaoRespostaDto {
     return {
       id: devolucao.id,
@@ -37,16 +36,16 @@ export class DevolucaoController {
   @Get()
   listar(): Promise<DevolucaoRespostaDto[]> {
     return this.devolucaoService.listar().then((devolucoes) =>
-      devolucoes.map((devolucao) => this.paraResposta(devolucao))
+      devolucoes.map((devolucao) => this.paraResposta(devolucao)),
     );
   }
 
   @Get(':id')
   buscarPorId(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<DevolucaoRespostaDto> {
     return this.devolucaoService.buscarPorId(id).then(
-      (devolucao) => this.paraResposta(devolucao)
+      (devolucao) => this.paraResposta(devolucao),
     );
   }
 
@@ -55,20 +54,23 @@ export class DevolucaoController {
     @Body() dados: CriarDevolucaoDto,
   ): Promise<DevolucaoRespostaDto> {
     return this.devolucaoService.adicionar(dados).then((devolucao) =>
-      this.paraResposta(devolucao));
+      this.paraResposta(devolucao),
+    );
   }
 
   @Patch(':id')
   atualizar(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dados: AtualizarDevolucaoDto,
   ): Promise<DevolucaoRespostaDto> {
-    return this.devolucaoService.atualizar(id, dados).then((devolucao) => this.paraResposta(devolucao));
+    return this.devolucaoService.atualizar(id, dados).then((devolucao) =>
+      this.paraResposta(devolucao),
+    );
   }
 
   @Delete(':id')
   remover(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<void> {
     return this.devolucaoService.remover(id);
   }

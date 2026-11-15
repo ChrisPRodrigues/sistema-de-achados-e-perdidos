@@ -1,5 +1,5 @@
 export class CategoriaRespostaDto {
-  id: number;
+  id: string;
   nome: string;
   descricao: string | null;
 }

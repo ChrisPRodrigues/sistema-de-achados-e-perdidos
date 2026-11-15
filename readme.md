@@ -22,10 +22,14 @@ O projeto utiliza NestJS no backend, com persistência de dados em PostgreSQL po
 - Gerenciamento de categorias e locais.
 - Cadastro e gerenciamento de usuários.
 - Registro e gerenciamento de devoluções.
+- Cadastro e gerenciamento de solicitações.
 - Validação de dados utilizando DTOs e `class-validator`.
 - Validação de relacionamentos entre registros.
 - Persistência de dados utilizando TypeORM.
 - Tratamento de erros HTTP para operações inválidas.
+- Paginação na listagem de objetos.
+- Retorno dos dados relacionados de categoria, local e usuário na consulta de objetos.
+- Prevenção de solicitações duplicadas para o mesmo usuário e objeto.
 
 ## Banco de dados
 
@@ -38,10 +42,17 @@ As principais entidades do MVP são:
 - Local
 - Usuário
 - Devolução
+- Solicitação
 
 As entidades possuem relacionamentos definidos para garantir a integridade referencial dos registros.
 
-A integração de solicitações, comprovantes e históricos ao banco de dados ficará para etapas futuras.
+A integração de solicitações ao banco de dados foi implementada por meio da entidade Solicitação, que relaciona usuários e objetos. Comprovantes e históricos permanecem para etapas futuras.
+
+As migrations são utilizadas para controlar as alterações na estrutura do banco de dados, com `synchronize: false`.
+
+Também foi implementada uma migration para converter os identificadores inteiros para UUID, preservando os relacionamentos entre as tabelas.
+
+As chaves estrangeiras utilizam restrições de exclusão (`RESTRICT`), protegendo registros que possuem relacionamentos com outras entidades.
 
 ## Validações
 
@@ -55,6 +66,7 @@ Entre as validações implementadas estão:
 - Validação de identificadores numéricos.
 - Verificação da existência de registros relacionados.
 - Tratamento de situações de conflito e registros inexistentes.
+- Prevenção de solicitações duplicadas para o mesmo usuário e objeto, com retorno HTTP 409 em caso de conflito.
 
 ## Gerenciamento de devoluções
 
@@ -75,6 +87,39 @@ As principais melhorias implementadas foram:
 - Restauração do status do objeto para `encontrado` quando uma devolução é excluída.
 
 As correções foram implementadas e verificadas por testes unitários. A execução completa com PostgreSQL ainda precisa ser validada.
+
+## Solicitações
+
+O módulo de solicitações foi integrado ao PostgreSQL por meio do TypeORM.
+
+As principais implementações foram:
+
+- Cadastro e consulta de solicitações.
+- Relacionamento entre usuários e objetos.
+- Verificação da existência do usuário e do objeto.
+- Prevenção de solicitações duplicadas para o mesmo usuário e objeto.
+- Restrição de unicidade no banco de dados.
+- Tratamento de conflitos com retorno HTTP 409, em vez de erro interno 500.
+
+## Listagem de objetos
+
+A listagem de objetos utiliza paginação e carrega os dados relacionados de categoria, local e usuário.
+
+A consulta retorna os dados do objeto e as informações de seus relacionamentos, evitando consultas individuais para cada registro (problema conhecido como N+1).
+
+## Dados de exemplo (Seed)
+
+Foi criado o arquivo `seed.ts` para inserir dados de exemplo no banco, incluindo usuários, objetos, solicitações e devoluções.
+
+As categorias e os locais utilizados pelo seed são cadastrados previamente pelas migrations.
+
+Para executar o seed:
+
+```bash
+npm run seed
+```
+
+O seed deve ser executado após as migrations e somente uma vez em um banco vazio, pois utiliza identificadores fixos.
 
 ## Como executar o projeto
 
@@ -108,7 +153,13 @@ As correções foram implementadas e verificadas por testes unitários. A execu�
    npm run migration:run
    ```
 
-6. Inicie a aplicação:
+6. Insira os dados de exemplo:
+
+   ```bash
+   npm run seed
+   ```
+
+7. Inicie a aplicação:
 
    ```bash
    npm run start:dev
@@ -116,9 +167,9 @@ As correções foram implementadas e verificadas por testes unitários. A execu�
 
 A aplicação ficará disponível em:
 
-http://localhost:3000
+[http://localhost:3000](http://localhost:3000)
 
-**Observação:** a execução das migrations depende de uma conexão válida com PostgreSQL.
+**Observação:** a execução das migrations depende de uma conexão válida com PostgreSQL e de um banco vazio compatível com a estrutura atual.
 
 ## Testes automatizados
 

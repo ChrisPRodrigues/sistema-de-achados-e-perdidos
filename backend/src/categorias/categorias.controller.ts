@@ -4,7 +4,7 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
@@ -17,10 +17,10 @@ import { CategoriaRespostaDto } from './dto/categoria-resposta.dto.js';
 
 @Controller('categorias')
 export class CategoriasController {
-  constructor(private readonly categoriasService: CategoriasService) { }
+  constructor(private readonly categoriasService: CategoriasService) {}
 
   private paraResposta(
-    categoria: CategoriaEntity
+    categoria: CategoriaEntity,
   ): CategoriaRespostaDto {
     return {
       id: categoria.id,
@@ -31,7 +31,7 @@ export class CategoriasController {
 
   @Post()
   async criar(
-    @Body() dados: CriarCategoriaDto
+    @Body() dados: CriarCategoriaDto,
   ): Promise<CategoriaRespostaDto> {
     const novaCategoria = await this.categoriasService.criar(dados);
 
@@ -47,7 +47,7 @@ export class CategoriasController {
 
   @Get(':id')
   async buscarPorId(
-    @Param('id', ParseIntPipe) id: number
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<CategoriaRespostaDto> {
     const categoria = await this.categoriasService.buscarPorId(id);
 
@@ -56,16 +56,19 @@ export class CategoriasController {
 
   @Patch(':id')
   async atualizar(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dados: AtualizarCategoriaDto,
   ): Promise<CategoriaRespostaDto> {
-    const categoriaAtualizada = await this.categoriasService.atualizar(id, dados);
+    const categoriaAtualizada = await this.categoriasService.atualizar(
+      id,
+      dados,
+    );
 
     return this.paraResposta(categoriaAtualizada);
   }
 
   @Delete(':id')
-  async remover(@Param('id', ParseIntPipe) id: number) {
+  async remover(@Param('id', ParseUUIDPipe) id: string) {
     return this.categoriasService.remover(id);
   }
 }

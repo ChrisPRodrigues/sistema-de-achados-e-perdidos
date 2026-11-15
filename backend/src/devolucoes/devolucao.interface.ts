@@ -1,7 +1,7 @@
 export interface Devolucao {
-    id: number;
-    objetoId: number;
-    usuarioId: number;
-    dataDevolucao: Date;
-    observacao?: string;
+  id: string;
+  objetoId: string;
+  usuarioId: string;
+  dataDevolucao: Date;
+  observacao?: string;
 }

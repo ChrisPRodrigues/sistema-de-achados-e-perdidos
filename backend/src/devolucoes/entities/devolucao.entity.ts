@@ -1,3 +1,4 @@
+
 import {
   Column,
   CreateDateColumn,
@@ -7,30 +8,29 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import type { Relation } from 'typeorm';
 
 import { ObjetoEntity } from '../../objetos/entities/objeto.entity.js';
 import { UsuarioEntity } from '../../usuarios/entities/usuario.entity.js';
 
 @Entity('devolucoes')
 export class DevolucaoEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  // Preserva o objeto enquanto houver uma devolução associada.
-  @OneToOne(() => ObjetoEntity, {
+  @OneToOne(() => ObjetoEntity, (objeto) => objeto.devolucao, {
     nullable: false,
-    onDelete: 'NO ACTION',
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'objeto_id' })
-  objeto: ObjetoEntity;
+  objeto: Relation<ObjetoEntity>;
 
-  // Impede excluir o usuário enquanto houver devoluções associadas.
-  @ManyToOne(() => UsuarioEntity, {
+  @ManyToOne(() => UsuarioEntity, (usuario) => usuario.devolucoes, {
     nullable: false,
-    onDelete: 'NO ACTION',
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'usuario_id' })
-  usuario: UsuarioEntity;
+  usuario: Relation<UsuarioEntity>;
 
   @Column({
     type: 'varchar',
@@ -39,6 +39,6 @@ export class DevolucaoEntity {
   })
   observacao: string | null;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'timestamptz' })
   dataDevolucao: Date;
 }

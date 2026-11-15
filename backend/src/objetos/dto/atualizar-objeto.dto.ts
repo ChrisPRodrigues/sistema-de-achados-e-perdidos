@@ -1,14 +1,12 @@
-
 import { Type } from 'class-transformer';
 import {
   IsDate,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   MaxLength,
-  Min,
 } from 'class-validator';
 
 export class AtualizarObjetoDto {
@@ -26,14 +24,12 @@ export class AtualizarObjetoDto {
   descricao?: string;
 
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  categoriaId?: number;
+  @IsUUID()
+  categoriaId?: string;
 
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  localId?: number;
+  @IsUUID()
+  localId?: string;
 
   @IsOptional()
   @Type(() => Date)

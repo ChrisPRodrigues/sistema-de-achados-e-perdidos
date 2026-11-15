@@ -1,17 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import type { Devolucao } from './devolucao.interface.js';
 
 @Injectable()
 export class DevolucaoRepository {
   private devolucoes: Devolucao[] = [];
 
-  private proximoId = 1;
-
   listar(): Devolucao[] {
     return this.devolucoes;
   }
 
-  buscarPorId(id: number): Devolucao | undefined {
+  buscarPorId(id: string): Devolucao | undefined {
     return this.devolucoes.find(
       (devolucao) => devolucao.id === id,
     );
@@ -19,7 +18,7 @@ export class DevolucaoRepository {
 
   adicionar(devolucao: Omit<Devolucao, 'id'>): Devolucao {
     const novaDevolucao: Devolucao = {
-      id: this.proximoId++,
+      id: randomUUID(),
       ...devolucao,
     };
 
@@ -29,7 +28,7 @@ export class DevolucaoRepository {
   }
 
   atualizar(
-    id: number,
+    id: string,
     dados: Partial<Omit<Devolucao, 'id'>>,
   ): Devolucao | undefined {
     const devolucao = this.buscarPorId(id);
@@ -43,7 +42,7 @@ export class DevolucaoRepository {
     return devolucao;
   }
 
-  remover(id: number): boolean {
+  remover(id: string): boolean {
     const indice = this.devolucoes.findIndex(
       (devolucao) => devolucao.id === id,
     );

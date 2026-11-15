@@ -2,12 +2,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
-  Between,
   ILike,
   In,
   IsNull,
   LessThan,
-  MoreThan,
   Repository,
 } from 'typeorm';
 
@@ -20,8 +18,8 @@ export class ConsultasService {
     private readonly objetosRepository: Repository<ObjetoEntity>,
   ) {}
 
-  // 1. Objetos encontrados antes de uma data
-  async objetosAntesDe(data: Date) {
+  // Consulta 1 — Objetos encontrados antes de uma data
+  async objetosAntesDe(data: Date): Promise<ObjetoEntity[]> {
     return this.objetosRepository.find({
       where: {
         dataEncontrado: LessThan(data),
@@ -29,8 +27,8 @@ export class ConsultasService {
     });
   }
 
-  // 2. Objetos com determinado nome (sem diferenciar maiúsculas)
-  async objetosPorNome(nome: string) {
+  // Consulta 2 — Buscar objetos pelo nome
+  async objetosPorNome(nome: string): Promise<ObjetoEntity[]> {
     return this.objetosRepository.find({
       where: {
         nome: ILike(`%${nome}%`),
@@ -38,8 +36,10 @@ export class ConsultasService {
     });
   }
 
-  // 3. Objetos cadastrados por determinado usuário
-  async objetosPorUsuario(usuarioId: number) {
+  // Consulta 3 — Objetos cadastrados por um usuário
+  async objetosPorUsuario(
+    usuarioId: string,
+  ): Promise<ObjetoEntity[]> {
     return this.objetosRepository.find({
       where: {
         usuario: {
@@ -52,8 +52,8 @@ export class ConsultasService {
     });
   }
 
-  // 4. Objetos com status encontrado ou devolvido
-  async objetosPorStatus() {
+  // Consulta 4 — Objetos por status
+  async objetosPorStatus(): Promise<ObjetoEntity[]> {
     return this.objetosRepository.find({
       where: {
         status: In(['encontrado', 'devolvido']),
@@ -61,8 +61,8 @@ export class ConsultasService {
     });
   }
 
-  // 5. Objetos sem descrição
-  async objetosSemDescricao() {
+  // Consulta 5 — Objetos sem descrição
+  async objetosSemDescricao(): Promise<ObjetoEntity[]> {
     return this.objetosRepository.find({
       where: {
         descricao: IsNull(),
@@ -70,8 +70,8 @@ export class ConsultasService {
     });
   }
 
-  // 6. Dez objetos encontrados mais recentemente
-  async objetosRecentes() {
+  // Consulta 6 — Dez objetos mais recentes
+  async objetosRecentes(): Promise<ObjetoEntity[]> {
     return this.objetosRepository.find({
       order: {
         dataEncontrado: 'DESC',
@@ -80,8 +80,10 @@ export class ConsultasService {
     });
   }
 
-  // 7. Objetos cujo nome começa com determinado texto
-  async objetosQueComecamCom(texto: string) {
+  // Consulta 7 — Objetos cujo nome começa com um texto
+  async objetosQueComecamCom(
+    texto: string,
+  ): Promise<ObjetoEntity[]> {
     return this.objetosRepository.find({
       where: {
         nome: ILike(`${texto}%`),
@@ -89,8 +91,8 @@ export class ConsultasService {
     });
   }
 
-  // 8. Quantidade total de objetos
-  async contarObjetos() {
+  // Consulta 8 — Quantidade total de objetos
+  async contarObjetos(): Promise<number> {
     return this.objetosRepository.count();
   }
 }

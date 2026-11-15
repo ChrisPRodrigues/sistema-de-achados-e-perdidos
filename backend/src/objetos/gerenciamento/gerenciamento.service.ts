@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NotFoundException,
@@ -18,8 +17,8 @@ import { HistoricoService } from '../../historicos/historico.service.js';
 type DadosAtualizacaoObjeto = {
   nome?: string;
   descricao?: string;
-  categoriaId?: number;
-  localId?: number;
+  categoriaId?: string;
+  localId?: string;
   dataEncontrado?: Date;
 };
 
@@ -44,7 +43,7 @@ export class GerenciamentoService {
   ) {}
 
   async atualizar(
-    id: number,
+    id: string,
     dados: DadosAtualizacaoObjeto,
   ): Promise<ObjetoEntity> {
     const objeto = await this.buscarObjeto(id);
@@ -90,22 +89,21 @@ export class GerenciamentoService {
     return this.buscarObjeto(id);
   }
 
+  async devolver(
+    id: string,
+    usuarioId: string,
+    observacao?: string,
+  ): Promise<ObjetoEntity> {
+    await this.devolucoesService.adicionar({
+      objetoId: id,
+      usuarioId,
+      observacao,
+    });
 
-async devolver(
-  id: number,
-  usuarioId: number,
-  observacao?: string,
-): Promise<ObjetoEntity> {
-  await this.devolucoesService.adicionar({
-    objetoId: id,
-    usuarioId,
-    observacao,
-  });
+    return this.buscarObjeto(id);
+  }
 
-  return this.buscarObjeto(id);
-}
-
-  async remover(id: number): Promise<void> {
+  async remover(id: string): Promise<void> {
     await this.buscarObjeto(id);
 
     const devolucao = await this.devolucoesRepository.findOne({
@@ -140,7 +138,8 @@ async devolver(
 
     await this.objetosRepository.delete(id);
   }
-  private async buscarObjeto(id: number): Promise<ObjetoEntity> {
+
+  private async buscarObjeto(id: string): Promise<ObjetoEntity> {
     const objeto = await this.objetosRepository.findOne({
       where: { id },
       relations: {

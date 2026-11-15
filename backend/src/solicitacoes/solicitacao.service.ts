@@ -1,4 +1,3 @@
-
 import {
   ConflictException,
   Injectable,
@@ -36,7 +35,7 @@ export class SolicitacaoService {
     };
   }
 
-  private async buscarUsuario(id: number): Promise<UsuarioEntity> {
+  private async buscarUsuario(id: string): Promise<UsuarioEntity> {
     const usuario = await this.usuariosRepository.findOneBy({ id });
 
     if (!usuario) {
@@ -46,7 +45,7 @@ export class SolicitacaoService {
     return usuario;
   }
 
-  private async buscarObjeto(id: number): Promise<ObjetoEntity> {
+  private async buscarObjeto(id: string): Promise<ObjetoEntity> {
     const objeto = await this.objetosRepository.findOneBy({ id });
 
     if (!objeto) {
@@ -57,9 +56,9 @@ export class SolicitacaoService {
   }
 
   private async verificarDuplicidade(
-    usuarioId: number,
-    objetoId: number,
-    ignorarId?: number,
+    usuarioId: string,
+    objetoId: string,
+    ignorarId?: string,
   ): Promise<void> {
     const existente = await this.solicitacoesRepository.findOne({
       where: {
@@ -123,7 +122,7 @@ export class SolicitacaoService {
     }
   }
 
-  async buscarPorId(id: number): Promise<Solicitacao | undefined> {
+  async buscarPorId(id: string): Promise<Solicitacao | undefined> {
     const solicitacao = await this.solicitacoesRepository.findOne({
       where: { id },
       relations: {
@@ -138,7 +137,7 @@ export class SolicitacaoService {
   }
 
   async atualizar(
-    id: number,
+    id: string,
     dados: Partial<DadosSolicitacao>,
   ): Promise<Solicitacao | undefined> {
     const solicitacao = await this.solicitacoesRepository.findOne({
@@ -178,7 +177,7 @@ export class SolicitacaoService {
     }
   }
 
-  async remover(id: number): Promise<boolean> {
+  async remover(id: string): Promise<boolean> {
     const resultado = await this.solicitacoesRepository.delete(id);
 
     return (resultado.affected ?? 0) > 0;

@@ -41,7 +41,7 @@ export class CategoriasService {
     return this.categoriasRepository.find();
   }
 
-  async buscarPorId(id: number): Promise<CategoriaEntity> {
+  async buscarPorId(id: string): Promise<CategoriaEntity> {
     const categoria = await this.categoriasRepository.findOne({
       where: { id },
     });
@@ -54,7 +54,7 @@ export class CategoriasService {
   }
 
   async atualizar(
-    id: number,
+    id: string,
     dados: AtualizarCategoriaDto,
   ): Promise<CategoriaEntity> {
     const categoria = await this.buscarPorId(id);
@@ -80,7 +80,7 @@ export class CategoriasService {
     return this.categoriasRepository.save(categoria);
   }
 
-  async remover(id: number): Promise<void> {
+  async remover(id: string): Promise<void> {
     await this.buscarPorId(id);
 
     try {

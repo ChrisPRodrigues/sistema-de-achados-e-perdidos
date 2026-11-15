@@ -1,17 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import type { Comprovante } from './comprovante.interface.js';
 
 @Injectable()
 export class ComprovanteRepository {
   private comprovantes: Comprovante[] = [];
 
-  private proximoId = 1;
-
   listar(): Comprovante[] {
     return this.comprovantes;
   }
 
-  buscarPorId(id: number): Comprovante | undefined {
+  buscarPorId(id: string): Comprovante | undefined {
     return this.comprovantes.find(
       (comprovante) => comprovante.id === id,
     );
@@ -19,7 +18,7 @@ export class ComprovanteRepository {
 
   adicionar(comprovante: Omit<Comprovante, 'id'>): Comprovante {
     const novoComprovante: Comprovante = {
-      id: this.proximoId++,
+      id: randomUUID(),
       ...comprovante,
     };
 
@@ -29,7 +28,7 @@ export class ComprovanteRepository {
   }
 
   atualizar(
-    id: number,
+    id: string,
     dados: Partial<Omit<Comprovante, 'id'>>,
   ): Comprovante | undefined {
     const comprovante = this.buscarPorId(id);
@@ -43,7 +42,7 @@ export class ComprovanteRepository {
     return comprovante;
   }
 
-  remover(id: number): boolean {
+  remover(id: string): boolean {
     const indice = this.comprovantes.findIndex(
       (comprovante) => comprovante.id === id,
     );

@@ -1,17 +1,14 @@
-
 import {
-  IsInt,
+  IsUUID,
   IsOptional,
   IsString,
   Matches,
   MaxLength,
-  Min,
 } from 'class-validator';
 
 export class RegistrarDevolucaoDto {
-  @IsInt()
-  @Min(1)
-  usuarioId: number;
+  @IsUUID()
+  usuarioId: string;
 
   @IsOptional()
   @IsString()

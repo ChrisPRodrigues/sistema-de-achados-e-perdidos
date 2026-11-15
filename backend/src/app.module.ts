@@ -35,7 +35,7 @@ import { ConsultasModule } from './consultas/consultas.module.js';
             : false,
         autoLoadEntities: true,
         synchronize: false,
-        logging: true,
+        logging: ['query'],
       }),
     }),
 

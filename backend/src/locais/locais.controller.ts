@@ -4,7 +4,7 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
+  ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
@@ -22,7 +22,7 @@ export class LocaisController {
   ) {}
 
   private paraResposta(
-    local: LocalEntity
+    local: LocalEntity,
   ): LocalRespostaDto {
     return {
       id: local.id,
@@ -34,16 +34,16 @@ export class LocaisController {
   @Get()
   listar(): Promise<LocalRespostaDto[]> {
     return this.locaisService.listar().then((locais) =>
-      locais.map((local) => this.paraResposta(local))
+      locais.map((local) => this.paraResposta(local)),
     );
   }
 
   @Get(':id')
   buscarPorId(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<LocalRespostaDto> {
     return this.locaisService.buscarPorId(id).then(
-      (local) => this.paraResposta(local)
+      (local) => this.paraResposta(local),
     );
   }
 
@@ -52,21 +52,23 @@ export class LocaisController {
     @Body() dados: CriarLocalDto,
   ): Promise<LocalRespostaDto> {
     return this.locaisService.adicionar(dados).then((local) =>
-      this.paraResposta(local));
+      this.paraResposta(local),
+    );
   }
 
   @Patch(':id')
   atualizar(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dados: AtualizarLocalDto,
   ): Promise<LocalRespostaDto> {
     return this.locaisService.atualizar(id, dados).then((local) =>
-      this.paraResposta(local));
+      this.paraResposta(local),
+    );
   }
 
   @Delete(':id')
   remover(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
   ): Promise<void> {
     return this.locaisService.remover(id);
   }

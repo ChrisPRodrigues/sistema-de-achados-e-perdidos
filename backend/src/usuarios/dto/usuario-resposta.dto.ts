@@ -1,6 +1,6 @@
 export class UsuarioRespostaDto {
-    id: number;
-    nome: string;
-    email: string;
-    tipo: 'aluno' | 'docente';
+  id: string;
+  nome: string;
+  email: string;
+  tipo: 'aluno' | 'docente';
 }

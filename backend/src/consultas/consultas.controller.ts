@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Query,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 
 import { ConsultasService } from './consultas.service.js';
@@ -21,7 +22,7 @@ export class ConsultasController {
     const dataConvertida = new Date(data);
 
     if (!data || Number.isNaN(dataConvertida.getTime())) {
-      throw new BadRequestException('Informe uma data vÃ¡lida.');
+      throw new BadRequestException('Informe uma data válida.');
     }
 
     return this.consultasService.objetosAntesDe(dataConvertida);
@@ -38,16 +39,12 @@ export class ConsultasController {
     return this.consultasService.objetosPorNome(texto);
   }
 
-  // 3. Objetos de um usuÃ¡rio
-  // GET /consultas/usuario?id=1
+  // 3. Objetos cadastrados por um usuário
+  // GET /consultas/usuario?id=UUID_DO_USUARIO
   @Get('usuario')
-  objetosPorUsuario(@Query('id') id: string) {
-    const usuarioId = Number(id);
-
-    if (!id || !Number.isInteger(usuarioId) || usuarioId <= 0) {
-      throw new BadRequestException('Informe um ID vÃ¡lido.');
-    }
-
+  objetosPorUsuario(
+    @Query('id', new ParseUUIDPipe()) usuarioId: string,
+  ) {
     return this.consultasService.objetosPorUsuario(usuarioId);
   }
 
@@ -58,7 +55,7 @@ export class ConsultasController {
     return this.consultasService.objetosPorStatus();
   }
 
-  // 5. Objetos sem descriÃ§Ã£o
+  // 5. Objetos sem descrição
   // GET /consultas/sem-descricao
   @Get('sem-descricao')
   objetosSemDescricao() {
@@ -72,7 +69,7 @@ export class ConsultasController {
     return this.consultasService.objetosRecentes();
   }
 
-  // 7. Objetos cujo nome comeÃ§a com um texto
+  // 7. Objetos cujo nome começa com um texto
   // GET /consultas/comeca-com?texto=Bo
   @Get('comeca-com')
   objetosQueComecamCom(@Query('texto') texto: string) {

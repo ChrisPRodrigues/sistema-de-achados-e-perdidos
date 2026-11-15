@@ -10,15 +10,33 @@ describe('GerenciamentoController', () => {
     devolver: vi.fn(),
   };
 
+  const objetoId = '550e8400-e29b-41d4-a716-446655440001';
+  const categoriaId = '550e8400-e29b-41d4-a716-446655440002';
+  const localId = '550e8400-e29b-41d4-a716-446655440003';
+  const usuarioId = '550e8400-e29b-41d4-a716-446655440004';
+
   const dataEncontrado = new Date('2026-10-25T10:00:00.000Z');
 
   const objetoBase = {
-    id: 1,
+    id: objetoId,
     nome: 'Celular',
     descricao: 'Celular encontrado na biblioteca',
-    categoria: { id: 2 },
-    localEncontrado: { id: 3 },
-    usuario: { id: 2 },
+    categoria: {
+      id: categoriaId,
+      nome: 'Eletrônicos',
+      descricao: 'Dispositivos eletrônicos',
+    },
+    localEncontrado: {
+      id: localId,
+      nome: 'Biblioteca',
+      descricao: 'Biblioteca central',
+    },
+    usuario: {
+      id: usuarioId,
+      nome: 'Maria',
+      email: 'maria@example.com',
+      tipo: 'aluno',
+    },
     dataEncontrado,
     status: 'encontrado',
   };
@@ -43,20 +61,23 @@ describe('GerenciamentoController', () => {
       ...dados,
     });
 
-    const resultado = await controller.atualizar(1, dados);
+    const resultado = await controller.atualizar(objetoId, dados);
 
     expect(gerenciamentoService.atualizar).toHaveBeenCalledWith(
-      1,
+      objetoId,
       dados,
     );
 
     expect(resultado).toEqual({
-      id: 1,
+      id: objetoId,
       nome: 'Celular atualizado',
       descricao: 'Celular encontrado na biblioteca',
-      categoriaId: 2,
-      localId: 3,
-      usuarioId: 2,
+      categoriaId,
+      localId,
+      usuarioId,
+      categoria: objetoBase.categoria,
+      local: objetoBase.localEncontrado,
+      usuario: objetoBase.usuario,
       dataEncontrado,
       status: 'encontrado',
     });
@@ -68,24 +89,27 @@ describe('GerenciamentoController', () => {
       status: 'devolvido',
     });
 
-    const resultado = await controller.devolver(1, {
-      usuarioId: 2,
+    const resultado = await controller.devolver(objetoId, {
+      usuarioId,
       observacao: 'Entregue ao proprietário',
     });
 
     expect(gerenciamentoService.devolver).toHaveBeenCalledWith(
-      1,
-      2,
+      objetoId,
+      usuarioId,
       'Entregue ao proprietário',
     );
 
     expect(resultado).toEqual({
-      id: 1,
+      id: objetoId,
       nome: 'Celular',
       descricao: 'Celular encontrado na biblioteca',
-      categoriaId: 2,
-      localId: 3,
-      usuarioId: 2,
+      categoriaId,
+      localId,
+      usuarioId,
+      categoria: objetoBase.categoria,
+      local: objetoBase.localEncontrado,
+      usuario: objetoBase.usuario,
       dataEncontrado,
       status: 'devolvido',
     });
