@@ -1,3 +1,4 @@
+
 # E2 — Consultas com TypeORM
 
 ## Projeto: Sistema de Achados e Perdidos
@@ -8,9 +9,11 @@
 
 ## 1. E06.1 — Consultas com Repository
 
-Foram implementadas oito consultas utilizando a entidade `ObjetoEntity`. Os comandos SQL apresentados foram obtidos dos logs reais do TypeORM.
+Foram implementadas oito consultas utilizando a entidade `ObjetoEntity`.
 
-Para facilitar a leitura, as consultas SQL de 1 a 7 foram simplificadas, mantendo as tabelas, filtros, parâmetros, relacionamentos e ordenações observados nos logs. O TypeORM também selecionou as demais colunas da entidade.
+Os comandos SQL apresentados abaixo são versões resumidas dos logs obtidos durante os experimentos anteriores à migração dos identificadores para UUID.
+
+As consultas SQL de 1 a 7 foram simplificadas para facilitar a leitura, mantendo as tabelas, os filtros, os parâmetros e as ordenações. O TypeORM também selecionou as demais colunas das entidades.
 
 ### Consulta 1 — Objetos encontrados antes de uma data
 
@@ -19,7 +22,9 @@ Para facilitar a leitura, as consultas SQL de 1 a 7 foram simplificadas, mantend
 ```typescript
 async objetosAntesDe(data: Date) {
   return this.objetosRepository.find({
-    where: { dataEncontrado: LessThan(data) },
+    where: {
+      dataEncontrado: LessThan(data),
+    },
   });
 }
 ```
@@ -34,7 +39,7 @@ WHERE "ObjetoEntity"."dataEncontrado" < $1;
 
 **Parâmetro:** `2026-11-01T00:00:00.000Z`
 
-**Resultado:** 1 objeto.
+**Resultado registrado:** 1 objeto.
 
 ### Consulta 2 — Buscar objetos pelo nome
 
@@ -43,7 +48,9 @@ WHERE "ObjetoEntity"."dataEncontrado" < $1;
 ```typescript
 async objetosPorNome(nome: string) {
   return this.objetosRepository.find({
-    where: { nome: ILike(`%${nome}%`) },
+    where: {
+      nome: ILike(`%${nome}%`),
+    },
   });
 }
 ```
@@ -58,19 +65,21 @@ WHERE "ObjetoEntity"."nome" ILIKE $1;
 
 **Parâmetro:** `%bola%`
 
-**Resultado:** 1 objeto.
+**Resultado registrado:** 1 objeto.
 
-O operador `ILIKE` realiza a busca sem diferenciar letras maiúsculas e minúsculas.
+O operador `ILIKE` realiza buscas sem diferenciar letras maiúsculas e minúsculas.
 
 ### Consulta 3 — Objetos cadastrados por usuário
 
-**TypeScript:**
+**TypeScript atualizado para UUID:**
 
 ```typescript
-async objetosPorUsuario(usuarioId: number) {
+async objetosPorUsuario(usuarioId: string) {
   return this.objetosRepository.find({
     where: {
-      usuario: { id: usuarioId },
+      usuario: {
+        id: usuarioId,
+      },
     },
     relations: {
       usuario: true,
@@ -79,7 +88,7 @@ async objetosPorUsuario(usuarioId: number) {
 }
 ```
 
-**SQL gerado — versão resumida:**
+**SQL gerado anteriormente — versão resumida:**
 
 ```sql
 SELECT *
@@ -89,11 +98,13 @@ INNER JOIN "usuarios" "Usuario"
 WHERE "Usuario"."id" = $1;
 ```
 
-**Parâmetro:** `1`
+**Parâmetro da execução anterior:** `1`
 
-**Resultado:** 1 objeto.
+**Resultado anterior:** 1 objeto.
 
-O `INNER JOIN` permite recuperar os dados do usuário associado ao objeto.
+**Observação:** após a migração do projeto para UUID, o método passou a receber `usuarioId` como `string`. O parâmetro numérico apresentado pertence à execução anterior à migração e não representa um resultado obtido com a estrutura atual.
+
+O relacionamento com a entidade `UsuarioEntity` permite recuperar os dados do usuário associado ao objeto.
 
 ### Consulta 4 — Objetos por status
 
@@ -119,7 +130,7 @@ WHERE "ObjetoEntity"."status" IN ($1, $2);
 
 **Parâmetros:** `encontrado`, `devolvido`
 
-**Resultado:** 1 objeto.
+**Resultado registrado:** 1 objeto.
 
 ### Consulta 5 — Objetos sem descrição
 
@@ -143,9 +154,9 @@ FROM "objetos" "ObjetoEntity"
 WHERE "ObjetoEntity"."descricao" IS NULL;
 ```
 
-**Resultado:** 0 objetos.
+**Resultado registrado:** 0 objetos.
 
-A coluna `descricao` é obrigatória na entidade atual, portanto essa consulta normalmente não encontrará registros.
+Como o campo `descricao` é obrigatório na entidade atual, normalmente essa consulta não encontrará registros.
 
 ### Consulta 6 — Dez objetos mais recentes
 
@@ -171,7 +182,7 @@ ORDER BY "ObjetoEntity"."dataEncontrado" DESC
 LIMIT 10;
 ```
 
-**Resultado:** 1 objeto, pois havia apenas um registro cadastrado.
+**Resultado registrado:** 1 objeto.
 
 ### Consulta 7 — Objetos cujo nome começa com determinado texto
 
@@ -197,7 +208,7 @@ WHERE "ObjetoEntity"."nome" ILIKE $1;
 
 **Parâmetro:** `Bo%`
 
-**Resultado:** 1 objeto.
+**Resultado registrado:** 1 objeto.
 
 ### Consulta 8 — Quantidade total de objetos
 
@@ -209,20 +220,51 @@ async contarObjetos() {
 }
 ```
 
-**SQL real gerado pelo TypeORM:**
+**SQL registrado:**
 
 ```sql
 SELECT COUNT(1) AS "cnt"
 FROM "objetos" "ObjetoEntity";
 ```
 
-**Resultado:** 1 objeto.
+**Resultado registrado:** 1 objeto.
 
 O método `count()` permite contar os registros diretamente no banco de dados.
 
 ---
 
-## 2. Experimento N+1
+## 2. Listagem paginada
+
+A aplicação utiliza o método `findAndCount()` do Repository do TypeORM para realizar a listagem paginada de objetos.
+
+A paginação utiliza os parâmetros `page` e `limit`, com valores padrão de 1 e 10, respectivamente.
+
+O DTO de paginação utiliza as validações `@IsInt()`, `@Min(1)` e `@Max(100)`, impedindo que o limite solicitado ultrapasse 100 registros por página.
+
+**Exemplo de implementação:**
+
+```typescript
+const [objetos, total] =
+  await this.objetosRepository.findAndCount({
+    relations: {
+      categoria: true,
+      localEncontrado: true,
+      usuario: true,
+    },
+    relationLoadStrategy: 'join',
+    skip: (page - 1) * limit,
+    take: limit,
+    order: {
+      id: 'ASC',
+    },
+  });
+```
+
+A consulta recupera os registros da página solicitada e a quantidade total de objetos, permitindo calcular o número de páginas.
+
+---
+
+## 3. Experimento N+1
 
 O experimento foi realizado com 50 objetos temporários, criados dentro de uma transação no PostgreSQL.
 
@@ -232,7 +274,9 @@ Foi realizada uma consulta inicial para recuperar os 50 objetos. Em seguida, o c
 
 ```typescript
 const objetos = await objetosRepository.find({
-  where: { id: In(ids) },
+  where: {
+    id: In(ids),
+  },
   take: 50,
 });
 
@@ -251,7 +295,9 @@ Foi utilizado `relations` para carregar os usuários associados aos objetos:
 
 ```typescript
 const objetosOtimizados = await objetosRepository.find({
-  where: { id: In(ids) },
+  where: {
+    id: In(ids),
+  },
   relations: {
     usuario: true,
   },
@@ -259,7 +305,9 @@ const objetosOtimizados = await objetosRepository.find({
 });
 ```
 
-### Resultados reais
+### Resultados medidos
+
+Os resultados abaixo foram obtidos na execução anterior à integração das alterações de UUID.
 
 | Abordagem | Consultas SQL | Tempo |
 |---|---:|---:|
@@ -278,33 +326,25 @@ Esse problema pode passar despercebido durante o desenvolvimento porque, com pou
 
 O experimento demonstrou que utilizar `relations` reduziu significativamente a quantidade de consultas SQL e o tempo de execução.
 
-Os tempos apresentados correspondem a uma execução do experimento e podem variar conforme a conexão e a carga do banco.
+Os tempos apresentados correspondem a uma execução específica e podem variar conforme a conexão e a carga do banco de dados.
 
-Ao final, foi executado `ROLLBACK`, desfazendo a inserção dos 50 objetos temporários.
-
----
-
-## 3. Considerações finais
-
-As oito consultas demonstraram o funcionamento dos métodos `find()`, `count()` e dos operadores `LessThan`, `ILike`, `In` e `IsNull`.
-
-O experimento N+1 demonstrou a importância de carregar relacionamentos de maneira eficiente para evitar consultas desnecessárias.
-
-A implementação foi realizada no projeto Sistema de Achados e Perdidos, adaptando os exemplos do roteiro da disciplina para suas entidades existentes.
+Ao final do experimento, foi executado `ROLLBACK`, desfazendo a inserção dos 50 objetos temporários.
 
 ---
 
 ## 4. Experimento CRUD com TypeORM
 
-O experimento CRUD foi realizado utilizando os métodos do Repository do TypeORM, conectado ao PostgreSQL.
+O experimento CRUD foi realizado utilizando métodos do Repository do TypeORM, conectado ao PostgreSQL.
 
-As operações foram executadas dentro de uma transação para permitir a demonstração dos comandos SQL sem manter alterações permanentes no banco de dados.
+As operações foram executadas dentro de uma transação para demonstrar os comandos SQL sem manter alterações permanentes no banco de dados.
+
+Os resultados desta seção foram registrados antes da migração dos identificadores para UUID.
 
 ### CREATE — Cadastro de objeto
 
-**Método:** `create()` e `save()`.
+**Métodos:** `create()` e `save()`.
 
-**SQL gerado:**
+**SQL registrado:**
 
 ```sql
 INSERT INTO "objetos"(
@@ -320,13 +360,13 @@ VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING "id", "status";
 ```
 
-**Resultado:** objeto cadastrado com ID 53 e nome `E2 Teste CRUD`.
+**Resultado anterior:** objeto cadastrado com ID `53` e nome `E2 Teste CRUD`.
 
 ### READ — Consulta de objeto
 
 **Método:** `findOne()`.
 
-**SQL gerado — versão resumida:**
+**SQL registrado — versão resumida:**
 
 ```sql
 SELECT *
@@ -335,7 +375,7 @@ WHERE "ObjetoEntity"."id" = $1
 LIMIT 1;
 ```
 
-**Parâmetro:** `53`.
+**Parâmetro anterior:** `53`.
 
 **Resultado:** objeto encontrado corretamente.
 
@@ -345,7 +385,7 @@ LIMIT 1;
 
 Antes da atualização, o TypeORM executou uma consulta `SELECT` para verificar o registro existente.
 
-**SQL de atualização:**
+**SQL registrado:**
 
 ```sql
 UPDATE "objetos"
@@ -353,7 +393,7 @@ SET "nome" = $1
 WHERE "id" = $2;
 ```
 
-**Parâmetros:** `E2 Teste CRUD Atualizado`, `53`.
+**Parâmetros anteriores:** `E2 Teste CRUD Atualizado`, `53`.
 
 **Resultado:** nome do objeto atualizado com sucesso.
 
@@ -361,14 +401,14 @@ WHERE "id" = $2;
 
 **Método:** `delete()`.
 
-**SQL gerado:**
+**SQL registrado:**
 
 ```sql
 DELETE FROM "objetos"
 WHERE "id" = $1;
 ```
 
-**Parâmetro:** `53`.
+**Parâmetro anterior:** `53`.
 
 **Resultado:** um registro excluído.
 
@@ -376,7 +416,7 @@ Após a exclusão, foi executada outra consulta `SELECT` para confirmar que o ob
 
 ### ROLLBACK — Desfazimento da transação
 
-**SQL executado:**
+**SQL registrado:**
 
 ```sql
 ROLLBACK;
@@ -391,3 +431,37 @@ O experimento demonstrou o funcionamento das quatro operações básicas de pers
 Os métodos `save()`, `findOne()` e `delete()` permitiram cadastrar, consultar, atualizar e excluir registros por meio de comandos SQL gerados automaticamente.
 
 A utilização de uma transação com `ROLLBACK` permitiu realizar os testes sem alterar permanentemente os registros do projeto.
+
+---
+
+## 5. Segurança das consultas
+
+As consultas implementadas utilizam os métodos do Repository do TypeORM, incluindo `find()`, `findAndCount()` e `count()`.
+
+Os filtros utilizam operadores como `LessThan`, `ILike`, `In` e `IsNull`.
+
+Os valores recebidos são fornecidos ao TypeORM como parâmetros, sem concatenar diretamente entradas do usuário na estrutura SQL.
+
+Por exemplo:
+
+```typescript
+where: {
+  nome: ILike(`%${nome}%`),
+}
+```
+
+Nesse caso, a interpolação monta o valor do filtro de pesquisa, enquanto o TypeORM utiliza parâmetros SQL para executar a consulta.
+
+---
+
+## 6. Considerações finais
+
+A atividade E2 demonstrou o funcionamento das consultas e operações CRUD utilizando o Repository do TypeORM.
+
+Foram implementadas oito consultas, paginação com `findAndCount()`, controle do limite de registros e um experimento para demonstrar o problema N+1.
+
+A implementação foi integrada às alterações da equipe, incluindo a utilização de identificadores UUID.
+
+A compilação do projeto foi concluída com sucesso e os 37 testes automatizados foram aprovados.
+
+Os resultados experimentais documentados correspondem às execuções anteriores à migração para UUID, sendo preservados como evidência das medições realizadas.
