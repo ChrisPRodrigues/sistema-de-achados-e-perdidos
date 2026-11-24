@@ -1,8 +1,11 @@
+
 import {
   Body,
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -68,11 +71,10 @@ export class UsuariosController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async remover(
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<{ mensagem: string }> {
-    const resultado = await this.usuariosService.remover(id);
-
-    return resultado;
+  ): Promise<void> {
+    await this.usuariosService.remover(id);
   }
 }

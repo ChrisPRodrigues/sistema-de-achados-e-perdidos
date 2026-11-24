@@ -1,14 +1,14 @@
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { ObjetosController } from './objetos.controller.js';
-import { ObjetoEntity } from './entities/objeto.entity.js';
+import { ListarObjetosService } from './listar-objetos.service.js';
 
 describe('ObjetosController', () => {
   let controller: ObjetosController;
 
-  const findAndCount = vi.fn();
+  const listar = vi.fn();
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -18,10 +18,8 @@ describe('ObjetosController', () => {
         controllers: [ObjetosController],
         providers: [
           {
-            provide: getRepositoryToken(ObjetoEntity),
-            useValue: {
-              findAndCount,
-            },
+            provide: ListarObjetosService,
+            useValue: { listar },
           },
         ],
       }).compile();
@@ -42,33 +40,39 @@ describe('ObjetosController', () => {
       id: 'uuid-objeto',
       nome: 'Mochila',
       descricao: 'Mochila encontrada na biblioteca',
-      categoria: { id: 'uuid-categoria' },
-      localEncontrado: { id: 'uuid-local' },
-      usuario: { id: 'uuid-usuario' },
+      categoria: {
+        id: 'uuid-categoria',
+        nome: 'Acessórios',
+        descricao: 'Objetos pessoais',
+      },
+      localEncontrado: {
+        id: 'uuid-local',
+        nome: 'Biblioteca',
+        descricao: 'Biblioteca do campus',
+      },
+      usuario: {
+        id: 'uuid-usuario',
+        nome: 'Professor',
+        email: 'professor@ifpe.edu.br',
+        tipo: 'docente',
+      },
       dataEncontrado,
       status: 'encontrado',
     };
 
-    findAndCount.mockResolvedValue([[objeto], 25]);
-
-    const resultado = await controller.listar({
+    const query = {
       page: 2,
       limit: 10,
+    };
+
+    listar.mockResolvedValue({
+      objetos: [objeto],
+      total: 25,
     });
 
-    expect(findAndCount).toHaveBeenCalledWith({
-      relations: {
-        categoria: true,
-        localEncontrado: true,
-        usuario: true,
-      },
-      relationLoadStrategy: 'join',
-      skip: 10,
-      take: 10,
-      order: {
-        id: 'ASC',
-      },
-    });
+    const resultado = await controller.listar(query);
+
+    expect(listar).toHaveBeenCalledWith(query);
 
     expect(resultado).toEqual({
       objetos: [
@@ -79,6 +83,22 @@ describe('ObjetosController', () => {
           categoriaId: 'uuid-categoria',
           localId: 'uuid-local',
           usuarioId: 'uuid-usuario',
+          categoria: {
+            id: 'uuid-categoria',
+            nome: 'Acessórios',
+            descricao: 'Objetos pessoais',
+          },
+          local: {
+            id: 'uuid-local',
+            nome: 'Biblioteca',
+            descricao: 'Biblioteca do campus',
+          },
+          usuario: {
+            id: 'uuid-usuario',
+            nome: 'Professor',
+            email: 'professor@ifpe.edu.br',
+            tipo: 'docente',
+          },
           dataEncontrado,
           status: 'encontrado',
         },

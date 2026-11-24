@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   NotFoundException,
   Param,
   ParseUUIDPipe,
@@ -79,9 +81,10 @@ export class SolicitacaoController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async remover(
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<boolean> {
-    return this.solicitacaoService.remover(id);
+  ): Promise<void> {
+    await this.solicitacaoService.remover(id);
   }
 }

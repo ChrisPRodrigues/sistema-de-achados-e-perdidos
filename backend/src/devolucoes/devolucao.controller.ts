@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -69,6 +71,7 @@ export class DevolucaoController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remover(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<void> {
