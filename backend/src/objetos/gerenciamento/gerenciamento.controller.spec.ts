@@ -1,4 +1,3 @@
-
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GerenciamentoController } from './gerenciamento.controller.js';
 
@@ -22,6 +21,33 @@ describe('GerenciamentoController', () => {
     dataEncontrado,
     status: 'encontrado',
   };
+
+  const respostaEsperada = (status: string, nome = 'Celular') => ({
+    id: 1,
+    nome,
+    descricao: 'Celular encontrado na biblioteca',
+    categoriaId: 2,
+    localId: 3,
+    usuarioId: 2,
+    categoria: {
+      id: 2,
+      nome: undefined,
+      descricao: undefined,
+    },
+    local: {
+      id: 3,
+      nome: undefined,
+      descricao: undefined,
+    },
+    usuario: {
+      id: 2,
+      nome: undefined,
+      email: undefined,
+      tipo: undefined,
+    },
+    dataEncontrado,
+    status,
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -50,16 +76,9 @@ describe('GerenciamentoController', () => {
       dados,
     );
 
-    expect(resultado).toEqual({
-      id: 1,
-      nome: 'Celular atualizado',
-      descricao: 'Celular encontrado na biblioteca',
-      categoriaId: 2,
-      localId: 3,
-      usuarioId: 2,
-      dataEncontrado,
-      status: 'encontrado',
-    });
+    expect(resultado).toEqual(
+      respostaEsperada('encontrado', 'Celular atualizado'),
+    );
   });
 
   it('deve chamar o serviço ao devolver um objeto', async () => {
@@ -79,15 +98,8 @@ describe('GerenciamentoController', () => {
       'Entregue ao proprietário',
     );
 
-    expect(resultado).toEqual({
-      id: 1,
-      nome: 'Celular',
-      descricao: 'Celular encontrado na biblioteca',
-      categoriaId: 2,
-      localId: 3,
-      usuarioId: 2,
-      dataEncontrado,
-      status: 'devolvido',
-    });
+    expect(resultado).toEqual(
+      respostaEsperada('devolvido'),
+    );
   });
 });

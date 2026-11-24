@@ -15,6 +15,7 @@ import { CadastroController } from './cadastro/cadastro.controller.js';
 import { CadastroService } from './cadastro/cadastro.service.js';
 import { GerenciamentoController } from './gerenciamento/gerenciamento.controller.js';
 import { GerenciamentoService } from './gerenciamento/gerenciamento.service.js';
+import { ListarObjetosService } from './listar-objetos.service.js';
 import { DevolucoesModule } from '../devolucoes/devolucoes.module.js';
 import { ComprovanteModule } from '../comprovantes/comprovante.module.js';
 import { HistoricoModule } from '../historicos/historico.module.js';
@@ -37,6 +38,7 @@ import { HistoricoModule } from '../historicos/historico.module.js';
     ObjetosRepositoryService,
     CadastroService,
     GerenciamentoService,
+    ListarObjetosService,
   ],
   exports: [ObjetosRepositoryService],
   controllers: [

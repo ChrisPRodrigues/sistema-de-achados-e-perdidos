@@ -177,9 +177,11 @@ export class SolicitacaoService {
     }
   }
 
-  async remover(id: string): Promise<boolean> {
+  async remover(id: string): Promise<void> {
     const resultado = await this.solicitacoesRepository.delete(id);
 
-    return (resultado.affected ?? 0) > 0;
+    if (!resultado.affected) {
+      throw new NotFoundException('Solicitação não encontrada');
+    }
   }
 }

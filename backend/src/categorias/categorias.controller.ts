@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -68,7 +70,10 @@ export class CategoriasController {
   }
 
   @Delete(':id')
-  async remover(@Param('id', ParseUUIDPipe) id: string) {
-    return this.categoriasService.remover(id);
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remover(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    await this.categoriasService.remover(id);
   }
 }
