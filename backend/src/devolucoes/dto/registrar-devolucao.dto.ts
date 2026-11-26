@@ -1,5 +1,4 @@
 import {
-  IsUUID,
   IsOptional,
   IsString,
   Matches,
@@ -7,9 +6,6 @@ import {
 } from 'class-validator';
 
 export class RegistrarDevolucaoDto {
-  @IsUUID()
-  usuarioId: string;
-
   @IsOptional()
   @IsString()
   @Matches(/\S/, {

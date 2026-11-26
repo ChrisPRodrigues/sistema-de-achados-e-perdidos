@@ -2,7 +2,9 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -13,6 +15,9 @@ import { DevolucaoEntity } from '../../devolucoes/entities/devolucao.entity.js';
 import { DevolucaoService } from '../../devolucoes/devolucao.service.js';
 import { ComprovanteService } from '../../comprovantes/comprovante.service.js';
 import { HistoricoService } from '../../historicos/historico.service.js';
+
+import type { UsuarioAutenticado } from '../../auth/decorators/usuario-atual.decorator.js';
+import { verificarPropriedade } from '../../auth/utils/propriedade.js';
 
 type DadosAtualizacaoObjeto = {
   nome?: string;
@@ -26,27 +31,49 @@ type DadosAtualizacaoObjeto = {
 export class GerenciamentoService {
   constructor(
     @InjectRepository(ObjetoEntity)
-    private readonly objetosRepository: Repository<ObjetoEntity>,
+    private readonly objetosRepository:
+      Repository<ObjetoEntity>,
 
     @InjectRepository(CategoriaEntity)
-    private readonly categoriasRepository: Repository<CategoriaEntity>,
+    private readonly categoriasRepository:
+      Repository<CategoriaEntity>,
 
     @InjectRepository(LocalEntity)
-    private readonly locaisRepository: Repository<LocalEntity>,
+    private readonly locaisRepository:
+      Repository<LocalEntity>,
 
     @InjectRepository(DevolucaoEntity)
-    private readonly devolucoesRepository: Repository<DevolucaoEntity>,
+    private readonly devolucoesRepository:
+      Repository<DevolucaoEntity>,
 
     private readonly devolucoesService: DevolucaoService,
     private readonly comprovanteService: ComprovanteService,
     private readonly historicoService: HistoricoService,
   ) {}
 
+  private verificarDocente(
+    usuario: UsuarioAutenticado,
+  ): void {
+    if (usuario.tipo !== 'docente') {
+      throw new ForbiddenException(
+        'Somente docentes podem gerenciar objetos',
+      );
+    }
+  }
+
   async atualizar(
     id: string,
     dados: DadosAtualizacaoObjeto,
+    usuario: UsuarioAutenticado,
   ): Promise<ObjetoEntity> {
+    this.verificarDocente(usuario);
+
     const objeto = await this.buscarObjeto(id);
+
+    verificarPropriedade(
+      usuario,
+      objeto.usuario.id,
+    );
 
     if (dados.nome !== undefined) {
       objeto.nome = dados.nome;
@@ -61,24 +88,30 @@ export class GerenciamentoService {
     }
 
     if (dados.categoriaId !== undefined) {
-      const categoria = await this.categoriasRepository.findOneBy({
-        id: dados.categoriaId,
-      });
+      const categoria =
+        await this.categoriasRepository.findOneBy({
+          id: dados.categoriaId,
+        });
 
       if (!categoria) {
-        throw new NotFoundException('Categoria não encontrada');
+        throw new NotFoundException(
+          'Categoria não encontrada',
+        );
       }
 
       objeto.categoria = categoria;
     }
 
     if (dados.localId !== undefined) {
-      const local = await this.locaisRepository.findOneBy({
-        id: dados.localId,
-      });
+      const local =
+        await this.locaisRepository.findOneBy({
+          id: dados.localId,
+        });
 
       if (!local) {
-        throw new NotFoundException('Local não encontrado');
+        throw new NotFoundException(
+          'Local não encontrado',
+        );
       }
 
       objeto.localEncontrado = local;
@@ -91,24 +124,39 @@ export class GerenciamentoService {
 
   async devolver(
     id: string,
-    usuarioId: string,
+    usuario: UsuarioAutenticado,
     observacao?: string,
   ): Promise<ObjetoEntity> {
-    await this.devolucoesService.adicionar({
-      objetoId: id,
-      usuarioId,
-      observacao,
-    });
+    this.verificarDocente(usuario);
+
+    await this.devolucoesService.adicionar(
+      {
+        objetoId: id,
+        observacao,
+      },
+      usuario,
+    );
 
     return this.buscarObjeto(id);
   }
 
-  async remover(id: string): Promise<void> {
-    await this.buscarObjeto(id);
+  async remover(
+    id: string,
+    usuario: UsuarioAutenticado,
+  ): Promise<void> {
+    this.verificarDocente(usuario);
 
-    const devolucao = await this.devolucoesRepository.findOne({
-      where: { objeto: { id } },
-    });
+    const objeto = await this.buscarObjeto(id);
+
+    verificarPropriedade(
+      usuario,
+      objeto.usuario.id,
+    );
+
+    const devolucao =
+      await this.devolucoesRepository.findOne({
+        where: { objeto: { id } },
+      });
 
     if (devolucao) {
       throw new ConflictException(
@@ -116,9 +164,13 @@ export class GerenciamentoService {
       );
     }
 
-    const possuiComprovante = this.comprovanteService
-      .listar()
-      .some((comprovante) => comprovante.objetoId === id);
+    const possuiComprovante =
+      this.comprovanteService
+        .listar()
+        .some(
+          (comprovante) =>
+            comprovante.objetoId === id,
+        );
 
     if (possuiComprovante) {
       throw new ConflictException(
@@ -126,9 +178,13 @@ export class GerenciamentoService {
       );
     }
 
-    const possuiHistorico = this.historicoService
-      .listar()
-      .some((historico) => historico.objetoId === id);
+    const possuiHistorico =
+      this.historicoService
+        .listar()
+        .some(
+          (historico) =>
+            historico.objetoId === id,
+        );
 
     if (possuiHistorico) {
       throw new ConflictException(
@@ -139,18 +195,23 @@ export class GerenciamentoService {
     await this.objetosRepository.delete(id);
   }
 
-  private async buscarObjeto(id: string): Promise<ObjetoEntity> {
-    const objeto = await this.objetosRepository.findOne({
-      where: { id },
-      relations: {
-        categoria: true,
-        localEncontrado: true,
-        usuario: true,
-      },
-    });
+  private async buscarObjeto(
+    id: string,
+  ): Promise<ObjetoEntity> {
+    const objeto =
+      await this.objetosRepository.findOne({
+        where: { id },
+        relations: {
+          categoria: true,
+          localEncontrado: true,
+          usuario: true,
+        },
+      });
 
     if (!objeto) {
-      throw new NotFoundException('Objeto não encontrado');
+      throw new NotFoundException(
+        'Objeto não encontrado',
+      );
     }
 
     return objeto;

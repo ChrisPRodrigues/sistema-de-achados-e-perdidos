@@ -1,10 +1,10 @@
-import { IsIn, IsOptional, IsUUID } from 'class-validator';
+import {
+  IsIn,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 
 export class AtualizarSolicitacaoDto {
-  @IsOptional()
-  @IsUUID()
-  usuarioId?: string;
-
   @IsOptional()
   @IsUUID()
   objetoId?: string;

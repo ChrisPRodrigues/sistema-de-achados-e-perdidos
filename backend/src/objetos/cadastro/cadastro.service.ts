@@ -1,8 +1,9 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -11,12 +12,13 @@ import { CategoriaEntity } from '../../categorias/entities/categoria.entity.js';
 import { LocalEntity } from '../../locais/entities/local.entity.js';
 import { UsuarioEntity } from '../../usuarios/entities/usuario.entity.js';
 
+import type { UsuarioAutenticado } from '../../auth/decorators/usuario-atual.decorator.js';
+
 type DadosCadastroObjeto = {
   nome: string;
   descricao: string;
   categoriaId: string;
   localId: string;
-  usuarioId: string;
   dataEncontrado: Date;
 };
 
@@ -24,48 +26,68 @@ type DadosCadastroObjeto = {
 export class CadastroService {
   constructor(
     @InjectRepository(ObjetoEntity)
-    private readonly objetosRepository: Repository<ObjetoEntity>,
+    private readonly objetosRepository:
+      Repository<ObjetoEntity>,
 
     @InjectRepository(CategoriaEntity)
-    private readonly categoriasRepository: Repository<CategoriaEntity>,
+    private readonly categoriasRepository:
+      Repository<CategoriaEntity>,
 
     @InjectRepository(LocalEntity)
-    private readonly locaisRepository: Repository<LocalEntity>,
+    private readonly locaisRepository:
+      Repository<LocalEntity>,
 
     @InjectRepository(UsuarioEntity)
-    private readonly usuariosRepository: Repository<UsuarioEntity>,
+    private readonly usuariosRepository:
+      Repository<UsuarioEntity>,
   ) {}
 
   async cadastrar(
     dados: DadosCadastroObjeto,
+    usuarioAutenticado: UsuarioAutenticado,
   ): Promise<ObjetoEntity> {
-    const categoria = await this.categoriasRepository.findOneBy({
-      id: dados.categoriaId,
-    });
-
-    if (!categoria) {
-      throw new NotFoundException('Categoria não encontrada');
+    if (usuarioAutenticado.tipo !== 'docente') {
+      throw new ForbiddenException(
+        'Somente docentes podem cadastrar objetos',
+      );
     }
 
-    const local = await this.locaisRepository.findOneBy({
-      id: dados.localId,
-    });
-
-    if (!local) {
-      throw new NotFoundException('Local não encontrado');
-    }
-
-    const usuario = await this.usuariosRepository.findOneBy({
-      id: dados.usuarioId,
-    });
+    const usuario =
+      await this.usuariosRepository.findOneBy({
+        id: usuarioAutenticado.sub,
+      });
 
     if (!usuario) {
-      throw new NotFoundException('Usuário não encontrado');
+      throw new NotFoundException(
+        'Usuário não encontrado',
+      );
     }
 
     if (usuario.tipo !== 'docente') {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         'Somente docentes podem cadastrar objetos',
+      );
+    }
+
+    const categoria =
+      await this.categoriasRepository.findOneBy({
+        id: dados.categoriaId,
+      });
+
+    if (!categoria) {
+      throw new NotFoundException(
+        'Categoria não encontrada',
+      );
+    }
+
+    const local =
+      await this.locaisRepository.findOneBy({
+        id: dados.localId,
+      });
+
+    if (!local) {
+      throw new NotFoundException(
+        'Local não encontrado',
       );
     }
 
@@ -82,18 +104,23 @@ export class CadastroService {
     return this.objetosRepository.save(objeto);
   }
 
-  async buscarPorId(id: string): Promise<ObjetoEntity> {
-    const objeto = await this.objetosRepository.findOne({
-      where: { id },
-      relations: {
-        categoria: true,
-        localEncontrado: true,
-        usuario: true,
-      },
-    });
+  async buscarPorId(
+    id: string,
+  ): Promise<ObjetoEntity> {
+    const objeto =
+      await this.objetosRepository.findOne({
+        where: { id },
+        relations: {
+          categoria: true,
+          localEncontrado: true,
+          usuario: true,
+        },
+      });
 
     if (!objeto) {
-      throw new NotFoundException('Objeto não encontrado');
+      throw new NotFoundException(
+        'Objeto não encontrado',
+      );
     }
 
     return objeto;

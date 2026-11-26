@@ -5,11 +5,11 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 
 import { SolicitacaoService } from './solicitacao.service.js';
@@ -18,7 +18,12 @@ import { AtualizarSolicitacaoDto } from './dto/atualizar-solicitacao.dto.js';
 import { SolicitacaoRespostaDto } from './dto/solicitacao-resposta.dto.js';
 import type { Solicitacao } from './models/solicitacao/solicitacao.interface.js';
 
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { UsuarioAtual } from '../auth/decorators/usuario-atual.decorator.js';
+import type { UsuarioAutenticado } from '../auth/decorators/usuario-atual.decorator.js';
+
 @Controller('solicitacoes')
+@UseGuards(JwtAuthGuard)
 export class SolicitacaoController {
   constructor(
     private readonly solicitacaoService: SolicitacaoService,
@@ -36,8 +41,11 @@ export class SolicitacaoController {
   }
 
   @Get()
-  async listar(): Promise<SolicitacaoRespostaDto[]> {
-    const solicitacoes = await this.solicitacaoService.listar();
+  async listar(
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+  ): Promise<SolicitacaoRespostaDto[]> {
+    const solicitacoes =
+      await this.solicitacaoService.listar(usuario);
 
     return solicitacoes.map((solicitacao) =>
       this.paraResposta(solicitacao),
@@ -47,8 +55,10 @@ export class SolicitacaoController {
   @Post()
   async cadastrar(
     @Body() dados: CriarSolicitacaoDto,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
   ): Promise<SolicitacaoRespostaDto> {
-    const solicitacao = await this.solicitacaoService.cadastrar(dados);
+    const solicitacao =
+      await this.solicitacaoService.cadastrar(dados, usuario);
 
     return this.paraResposta(solicitacao);
   }
@@ -56,12 +66,10 @@ export class SolicitacaoController {
   @Get(':id')
   async buscarPorId(
     @Param('id', ParseUUIDPipe) id: string,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
   ): Promise<SolicitacaoRespostaDto> {
-    const solicitacao = await this.solicitacaoService.buscarPorId(id);
-
-    if (!solicitacao) {
-      throw new NotFoundException('Solicitação não encontrada');
-    }
+    const solicitacao =
+      await this.solicitacaoService.buscarPorId(id, usuario);
 
     return this.paraResposta(solicitacao);
   }
@@ -70,12 +78,14 @@ export class SolicitacaoController {
   async atualizar(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dados: AtualizarSolicitacaoDto,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
   ): Promise<SolicitacaoRespostaDto> {
-    const solicitacao = await this.solicitacaoService.atualizar(id, dados);
-
-    if (!solicitacao) {
-      throw new NotFoundException('Solicitação não encontrada');
-    }
+    const solicitacao =
+      await this.solicitacaoService.atualizar(
+        id,
+        dados,
+        usuario,
+      );
 
     return this.paraResposta(solicitacao);
   }
@@ -84,7 +94,8 @@ export class SolicitacaoController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remover(
     @Param('id', ParseUUIDPipe) id: string,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
   ): Promise<void> {
-    await this.solicitacaoService.remover(id);
+    await this.solicitacaoService.remover(id, usuario);
   }
 }

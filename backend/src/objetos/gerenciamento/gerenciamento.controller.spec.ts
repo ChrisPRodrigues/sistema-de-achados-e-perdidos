@@ -1,56 +1,40 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { GerenciamentoController } from './gerenciamento.controller.js';
+
+import type { UsuarioAutenticado } from '../../auth/decorators/usuario-atual.decorator.js';
 
 describe('GerenciamentoController', () => {
   let controller: GerenciamentoController;
 
+  const docente: UsuarioAutenticado = {
+    sub: 'docente-1',
+    tipo: 'docente',
+  };
+
   const gerenciamentoService = {
     atualizar: vi.fn(),
     devolver: vi.fn(),
+    remover: vi.fn(),
   };
 
-  const dataEncontrado = new Date('2026-10-25T10:00:00.000Z');
+  const dataEncontrado = new Date(
+    '2026-10-25T10:00:00.000Z',
+  );
 
   const objetoBase = {
-    id: 1,
+    id: 'objeto-1',
     nome: 'Celular',
     descricao: 'Celular encontrado na biblioteca',
-    categoria: { id: 2 },
-    localEncontrado: { id: 3 },
-    usuario: { id: 2 },
+    categoria: { id: 'categoria-1' },
+    localEncontrado: { id: 'local-1' },
+    usuario: { id: docente.sub },
     dataEncontrado,
     status: 'encontrado',
   };
 
-  const respostaEsperada = (status: string, nome = 'Celular') => ({
-    id: 1,
-    nome,
-    descricao: 'Celular encontrado na biblioteca',
-    categoriaId: 2,
-    localId: 3,
-    usuarioId: 2,
-    categoria: {
-      id: 2,
-      nome: undefined,
-      descricao: undefined,
-    },
-    local: {
-      id: 3,
-      nome: undefined,
-      descricao: undefined,
-    },
-    usuario: {
-      id: 2,
-      nome: undefined,
-      email: undefined,
-      tipo: undefined,
-    },
-    dataEncontrado,
-    status,
-  });
-
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
 
     controller = new GerenciamentoController(
       gerenciamentoService as any,
@@ -61,45 +45,78 @@ describe('GerenciamentoController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('deve chamar o serviço ao atualizar um objeto', async () => {
-    const dados = { nome: 'Celular atualizado' };
+  it('deve encaminhar o usuário autenticado na atualização', async () => {
+    const dados = {
+      nome: 'Celular atualizado',
+    };
 
     gerenciamentoService.atualizar.mockResolvedValue({
       ...objetoBase,
       ...dados,
     });
 
-    const resultado = await controller.atualizar(1, dados);
-
-    expect(gerenciamentoService.atualizar).toHaveBeenCalledWith(
-      1,
+    const resultado = await controller.atualizar(
+      'objeto-1',
       dados,
+      docente,
     );
 
-    expect(resultado).toEqual(
-      respostaEsperada('encontrado', 'Celular atualizado'),
-    );
+    expect(gerenciamentoService.atualizar)
+      .toHaveBeenCalledWith(
+        'objeto-1',
+        dados,
+        docente,
+      );
+
+    expect(resultado).toMatchObject({
+      id: 'objeto-1',
+      nome: 'Celular atualizado',
+      usuarioId: docente.sub,
+      status: 'encontrado',
+    });
   });
 
-  it('deve chamar o serviço ao devolver um objeto', async () => {
+  it('deve encaminhar o usuário autenticado na devolução', async () => {
     gerenciamentoService.devolver.mockResolvedValue({
       ...objetoBase,
       status: 'devolvido',
     });
 
-    const resultado = await controller.devolver(1, {
-      usuarioId: 2,
-      observacao: 'Entregue ao proprietário',
+    const resultado = await controller.devolver(
+      'objeto-1',
+      {
+        observacao: 'Entregue ao proprietário',
+      },
+      docente,
+    );
+
+    expect(gerenciamentoService.devolver)
+      .toHaveBeenCalledWith(
+        'objeto-1',
+        docente,
+        'Entregue ao proprietário',
+      );
+
+    expect(resultado).toMatchObject({
+      id: 'objeto-1',
+      status: 'devolvido',
     });
+  });
 
-    expect(gerenciamentoService.devolver).toHaveBeenCalledWith(
-      1,
-      2,
-      'Entregue ao proprietário',
+  it('deve encaminhar o usuário autenticado na exclusão', async () => {
+    gerenciamentoService.remover.mockResolvedValue(
+      undefined,
     );
 
-    expect(resultado).toEqual(
-      respostaEsperada('devolvido'),
+    await controller.remover(
+      'objeto-1',
+      docente,
     );
+
+    expect(gerenciamentoService.remover)
+      .toHaveBeenCalledWith(
+        'objeto-1',
+        docente,
+      );
   });
 });

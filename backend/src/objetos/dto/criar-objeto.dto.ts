@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+
 import {
   IsDate,
   IsNotEmpty,
@@ -25,9 +26,6 @@ export class CriarObjetoDto {
 
   @IsUUID()
   localId: string;
-
-  @IsUUID()
-  usuarioId: string;
 
   @Type(() => Date)
   @IsDate()

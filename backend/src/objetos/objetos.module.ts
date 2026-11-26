@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -19,9 +18,11 @@ import { ListarObjetosService } from './listar-objetos.service.js';
 import { DevolucoesModule } from '../devolucoes/devolucoes.module.js';
 import { ComprovanteModule } from '../comprovantes/comprovante.module.js';
 import { HistoricoModule } from '../historicos/historico.module.js';
+import { AuthModule } from '../auth/auth.module.js';
 
 @Module({
   imports: [
+    AuthModule,
     TypeOrmModule.forFeature([
       ObjetoEntity,
       CategoriaEntity,
