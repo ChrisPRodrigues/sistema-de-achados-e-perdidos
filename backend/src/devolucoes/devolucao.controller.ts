@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 
 import { DevolucaoService } from './devolucao.service.js';
@@ -17,7 +18,16 @@ import { CriarDevolucaoDto } from './dto/criar-devolucao.dto.js';
 import { AtualizarDevolucaoDto } from './dto/atualizar-devolucao.dto.js';
 import { DevolucaoRespostaDto } from './dto/devolucao-resposta.dto.js';
 
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../auth/guards/roles.guard.js';
+import { Roles } from '../auth/decorators/roles.decorator.js';
+
+import { UsuarioAtual } from '../auth/decorators/usuario-atual.decorator.js';
+import type { UsuarioAutenticado } from '../auth/decorators/usuario-atual.decorator.js';
+
 @Controller('devolucoes')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('docente')
 export class DevolucaoController {
   constructor(
     private readonly devolucaoService: DevolucaoService,
@@ -36,45 +46,70 @@ export class DevolucaoController {
   }
 
   @Get()
-  listar(): Promise<DevolucaoRespostaDto[]> {
-    return this.devolucaoService.listar().then((devolucoes) =>
-      devolucoes.map((devolucao) => this.paraResposta(devolucao)),
-    );
-  }
+  async listar(
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+  ): Promise<DevolucaoRespostaDto[]> {
+    const devolucoes =
+      await this.devolucaoService.listar(usuario);
 
-  @Get(':id')
-  buscarPorId(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<DevolucaoRespostaDto> {
-    return this.devolucaoService.buscarPorId(id).then(
+    return devolucoes.map(
       (devolucao) => this.paraResposta(devolucao),
     );
   }
 
-  @Post()
-  adicionar(
-    @Body() dados: CriarDevolucaoDto,
+  @Get(':id')
+  async buscarPorId(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
   ): Promise<DevolucaoRespostaDto> {
-    return this.devolucaoService.adicionar(dados).then((devolucao) =>
-      this.paraResposta(devolucao),
-    );
+    const devolucao =
+      await this.devolucaoService.buscarPorId(
+        id,
+        usuario,
+      );
+
+    return this.paraResposta(devolucao);
+  }
+
+  @Post()
+  async adicionar(
+    @Body() dados: CriarDevolucaoDto,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+  ): Promise<DevolucaoRespostaDto> {
+    const devolucao =
+      await this.devolucaoService.adicionar(
+        dados,
+        usuario,
+      );
+
+    return this.paraResposta(devolucao);
   }
 
   @Patch(':id')
-  atualizar(
+  async atualizar(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dados: AtualizarDevolucaoDto,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
   ): Promise<DevolucaoRespostaDto> {
-    return this.devolucaoService.atualizar(id, dados).then((devolucao) =>
-      this.paraResposta(devolucao),
-    );
+    const devolucao =
+      await this.devolucaoService.atualizar(
+        id,
+        dados,
+        usuario,
+      );
+
+    return this.paraResposta(devolucao);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remover(
     @Param('id', ParseUUIDPipe) id: string,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
   ): Promise<void> {
-    return this.devolucaoService.remover(id);
+    return this.devolucaoService.remover(
+      id,
+      usuario,
+    );
   }
 }
