@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
@@ -54,6 +55,12 @@ export class UsuariosService {
     id: string,
     dados: Partial<DadosUsuario>,
   ): Promise<UsuarioEntity> {
+    if (dados.tipo !== undefined){
+      throw new ForbiddenException(
+        'Não é permitido alterar o perfil do usuário',
+      );
+    }
+
     const usuario = await this.buscarPorId(id);
 
     if (dados.email && dados.email !== usuario.email) {

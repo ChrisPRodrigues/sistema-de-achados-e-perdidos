@@ -23,6 +23,15 @@ export class UsuarioEntity {
   email: string;
 
   @Column({
+    name: 'senha_hash',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    select: false,
+  })
+  senhaHash: string | null;
+
+  @Column({
     type: 'enum',
     enum: ['aluno', 'docente'],
   })

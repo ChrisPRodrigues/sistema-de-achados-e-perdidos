@@ -1,4 +1,3 @@
-
 import {
   Body,
   Controller,
@@ -9,16 +8,17 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
-  Post,
+  UseGuards,
 } from '@nestjs/common';
 
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { UsuariosService } from './usuarios.service.js';
 import { UsuarioEntity } from './entities/usuario.entity.js';
-import { CriarUsuarioDto } from './dto/criar-usuario.dto.js';
 import { AtualizarUsuarioDto } from './dto/atualizar-usuario.dto.js';
 import { UsuarioRespostaDto } from './dto/usuario-resposta.dto.js';
 
 @Controller('usuarios')
+@UseGuards(JwtAuthGuard)
 export class UsuariosController {
   constructor(
     private readonly usuariosService: UsuariosService,
@@ -40,15 +40,6 @@ export class UsuariosController {
     const usuarios = await this.usuariosService.listar();
 
     return usuarios.map((usuario) => this.paraResposta(usuario));
-  }
-
-  @Post()
-  async cadastrar(
-    @Body() usuario: CriarUsuarioDto,
-  ): Promise<UsuarioRespostaDto> {
-    const novoUsuario = await this.usuariosService.cadastrar(usuario);
-
-    return this.paraResposta(novoUsuario);
   }
 
   @Get(':id')
