@@ -1,7 +1,5 @@
-
 import {
   IsEmail,
-  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -23,8 +21,4 @@ export class AtualizarUsuarioDto {
   @IsEmail()
   @MaxLength(255)
   email?: string;
-
-  @IsOptional()
-  @IsIn(['aluno', 'docente'])
-  tipo?: 'aluno' | 'docente';
 }

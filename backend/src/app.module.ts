@@ -14,6 +14,7 @@ import { LocaisModule } from './locais/locais.module.js';
 import { SolicitacoesModule } from './solicitacoes/solicitacoes.module.js';
 import { ComprovanteModule } from './comprovantes/comprovante.module.js';
 import { HistoricoModule } from './historicos/historico.module.js';
+import { AuthModule } from './auth/auth.module.js';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { HistoricoModule } from './historicos/historico.module.js';
     SolicitacoesModule,
     ComprovanteModule,
     HistoricoModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
