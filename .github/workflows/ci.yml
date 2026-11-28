@@ -1,0 +1,41 @@
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+      - "feature/**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend:
+    name: Testes e Build do Backend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar testes
+        run: npm test
+
+      - name: Executar build
+        run: npm run build
